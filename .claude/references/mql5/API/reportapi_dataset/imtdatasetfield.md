@@ -1,0 +1,108 @@
+# IMTDatasetField
+
+> Source: https://support.metaquotes.net/en/docs/mt5/api/reportapi_dataset/imtdatasetfield
+
+-   [MetaTrader 5](/en/docs/mt5)
+    -   [Platform](/en/docs/mt5/platform)
+    -   [Administrator](/en/docs/mt5/platform/administrator)
+    -   [Manager](/en/docs/mt5/manager)
+    -   [Client terminal](/en/docs/mt5/client)
+    -   [MetaEditor](/en/docs/mt5/metaeditor)
+    -   [iPhone/iPad](/en/docs/mt5/iphone)
+    -   [Android](/en/docs/mt5/android)
+    -   [WebTerminal](/en/docs/mt5/platform/components/web_terminal)
+    -   [API](/en/docs/mt5/api)
+        -   [Getting Started](/en/docs/mt5/api/getting_started)
+        -   [Server API](/en/docs/mt5/api/serverapi)
+        -   [Manager API](/en/docs/mt5/api/managerapi)
+        -   [Gateway API](/en/docs/mt5/api/gatewayapi)
+        -   [Report API](/en/docs/mt5/api/reportapi)
+            -   [Purpose of the Report API](/en/docs/mt5/api/reportapi_purpose)
+            -   [Interaction with Servers](/en/docs/mt5/api/reportapi_interaction)
+            -   [Configuration of Reports](/en/docs/mt5/api/reportapi_configuration)
+            -   [Request for Reports](/en/docs/mt5/api/reportapi_request)
+            -   [Requirements for Modules](/en/docs/mt5/api/reportapi_requirements)
+            -   [Creating a Simple Report](/en/docs/mt5/api/reportapi_simple_report)
+            -   [Tabular Reports](/en/docs/mt5/api/reportapi_tables)
+            -   [HTML Reports](/en/docs/mt5/api/reportapi_html)
+            -   [Dashboards](/en/docs/mt5/api/reportapi_dashboards)
+            -   [Templates](/en/docs/mt5/api/reportapi_html_template)
+            -   [Charts](/en/docs/mt5/api/reportapi_html_charts)
+            -   [Memory Management](/en/docs/mt5/api/reportapi_memory_management)
+            -   [Multithreading](/en/docs/mt5/api/reportapi_multithreading)
+            -   [Ready-made Examples](/en/docs/mt5/api/reportapi_examples)
+            -   [Entry Points](/en/docs/mt5/api/reportapi_entrypoints)
+            -   [Report Plugin Interface](/en/docs/mt5/api/imtreportcontext)
+            -   [Main Interface of Reports](/en/docs/mt5/api/imtreportapi)
+            -   [Dashboard Interfaces](/en/docs/mt5/api/reportapi_dashboard)
+            -   [Diagram Interfaces](/en/docs/mt5/api/reportapi_auxiliary)
+            -   [Dataset Interfaces](/en/docs/mt5/api/reportapi_dataset)
+                -   [IMTDataset](/en/docs/mt5/api/reportapi_dataset/imtdataset)
+                -   [IMTDatasetField](/en/docs/mt5/api/reportapi_dataset/imtdatasetfield)
+                    -   [Enumerations](/en/docs/mt5/api/reportapi_dataset/imtdatasetfield/imtdatasetfield_enum)
+                    -   [Release](/en/docs/mt5/api/reportapi_dataset/imtdatasetfield/imtdatasetfield_release)
+                    -   [Assign](/en/docs/mt5/api/reportapi_dataset/imtdatasetfield/imtdatasetfield_assign)
+                    -   [Clear](/en/docs/mt5/api/reportapi_dataset/imtdatasetfield/imtdatasetfield_clear)
+                    -   [Id](/en/docs/mt5/api/reportapi_dataset/imtdatasetfield/imtdatasetfield_id)
+                    -   [Type](/en/docs/mt5/api/reportapi_dataset/imtdatasetfield/imtdatasetfield_type)
+                    -   [Offset](/en/docs/mt5/api/reportapi_dataset/imtdatasetfield/imtdatasetfield_offset)
+                    -   [Size](/en/docs/mt5/api/reportapi_dataset/imtdatasetfield/imtdatasetfield_size)
+                    -   [Flags](/en/docs/mt5/api/reportapi_dataset/imtdatasetfield/imtdatasetfield_flags)
+                    -   [WhereAddInt](/en/docs/mt5/api/reportapi_dataset/imtdatasetfield/imtdatasetfield_whereaddint)
+                    -   [WhereAddIntArray](/en/docs/mt5/api/reportapi_dataset/imtdatasetfield/imtdatasetfield_whereaddintarray)
+                    -   [WhereAddUInt](/en/docs/mt5/api/reportapi_dataset/imtdatasetfield/imtdatasetfield_whereadduint)
+                    -   [WhereAddUIntArray](/en/docs/mt5/api/reportapi_dataset/imtdatasetfield/imtdatasetfield_whereadduintarray)
+                    -   [WhereAddDouble](/en/docs/mt5/api/reportapi_dataset/imtdatasetfield/imtdatasetfield_whereadddouble)
+                    -   [WhereAddDoubleArray](/en/docs/mt5/api/reportapi_dataset/imtdatasetfield/imtdatasetfield_whereadddoublearray)
+                    -   [WhereAddString](/en/docs/mt5/api/reportapi_dataset/imtdatasetfield/imtdatasetfield_whereaddstring)
+                    -   [WhereAddStringArray](/en/docs/mt5/api/reportapi_dataset/imtdatasetfield/imtdatasetfield_whereaddstringarray)
+                    -   [BetweenInt](/en/docs/mt5/api/reportapi_dataset/imtdatasetfield/imtdatasetfield_betweenint)
+                    -   [BetweenUInt](/en/docs/mt5/api/reportapi_dataset/imtdatasetfield/imtdatasetfield_betweenuint)
+                    -   [BetweenDouble](/en/docs/mt5/api/reportapi_dataset/imtdatasetfield/imtdatasetfield_betweendouble)
+                -   [IMTDatasetRequest](/en/docs/mt5/api/reportapi_dataset/imtdatasetrequest)
+                -   [IMTDatasetColumn](/en/docs/mt5/api/reportapi_dataset/imtdatasetcolumn)
+                -   [IMTDatasetSummary](/en/docs/mt5/api/reportapi_dataset/imtdatasetsummary)
+            -   [Data Cache Interfaces](/en/docs/mt5/api/reportapi_cache)
+        -   [Web API](/en/docs/mt5/api/webapi)
+        -   [SQL Export](/en/docs/mt5/api/sql_export)
+        -   [Internal Data Types](/en/docs/mt5/api/reference_types)
+        -   [Journal Constants](/en/docs/mt5/api/journal)
+        -   [Return Codes](/en/docs/mt5/api/reference_retcodes)
+        -   [Structures](/en/docs/mt5/api/reference_structures)
+        -   [Configuration Interfaces](/en/docs/mt5/api/reference_configurations)
+        -   [Database Interfaces](/en/docs/mt5/api/reference_bases)
+        -   [Tools](/en/docs/mt5/api/reference_tools)
+        -   [Development Features](/en/docs/mt5/api/features)
+        -   [List of Events](/en/docs/mt5/api/event_list)
+        -   [List of Hooks](/en/docs/mt5/api/hook_list)
+-   [MetaTrader 4](/en/docs/mt4)
+    -   [Administrator](/en/docs/mt4/administrator)
+    -   [Manager](/en/docs/mt4/manager)
+    -   [Client terminal](/en/docs/mt4/terminal)
+    -   [MetaEditor](/en/docs/mt4/metaeditor)
+    -   [WebTerminal](/en/docs/mt4/administrator/web_terminal)
+    -   [MultiTerminal](/en/docs/mt4/multiterminal)
+    -   [API](/en/docs/mt4/api)
+-   [Finteza](/en/docs/finteza)
+    -   [CMS Plugins](/en/docs/finteza/plugins)
+    -   [Finteza JavaScript Client](/en/docs/finteza/javascript-client)
+    -   [Finteza SDK](/en/docs/finteza/sdk)
+-   [MQL5.community](/en/docs/community)
+
+window.fz('show', 'fotcgrjxafakglznxzxkinbtytrjklzamk');
+
+[MetaTrader 5](/en/docs/mt5)[API](/en/docs/mt5/api)[Report API](/en/docs/mt5/api/reportapi)[Dataset Interfaces](/en/docs/mt5/api/reportapi_dataset)IMTDatasetField
+
+# IMTDatasetField
+
+The IMTDatasetField interface is used for descriptions of the fields of accounts, deals and clients used in relevant data [request](/en/docs/mt5/api/reportapi_dataset) from the trading platform database. The interface contains the following methods:
+
+<table class="table" cellspacing="0" cellpadding="5" border="1"><thead><tr class="table"><th class="table" style="width:170px;"><p class="p_fortable"><span class="f_fortable" style="font-weight: bold;">Method</span></p></th><th class="table"><p class="p_fortable"><span class="f_fortable" style="font-weight: bold;">Purpose</span></p></th></tr></thead><tbody><tr class="table"><td class="table" style="width:170px;"><p class="p_fortable"><span class="f_fortable"><a href="/en/docs/mt5/api/reportapi_dataset/imtdatasetfield/imtdatasetfield_release" class="topiclink">Release</a></span></p></td><td class="table"><p class="p_fortable"><span class="f_fortable">Delete the current object.</span></p></td></tr><tr class="table"><td class="table" style="width:170px;"><p class="p_fortable"><span class="f_fortable"><a href="/en/docs/mt5/api/reportapi_dataset/imtdatasetfield/imtdatasetfield_assign" class="topiclink">Assign</a></span></p></td><td class="table"><p class="p_fortable"><span class="f_fortable">Assign a passed object to the current one.</span></p></td></tr><tr class="table"><td class="table" style="width:170px;"><p class="p_fortable"><span class="f_fortable"><a href="/en/docs/mt5/api/reportapi_dataset/imtdatasetfield/imtdatasetfield_clear" class="topiclink">Clear</a></span></p></td><td class="table"><p class="p_fortable"><span class="f_fortable">Clear an object.</span></p></td></tr><tr class="table"><td class="table" style="width:170px;"><p class="p_fortable"><span class="f_fortable"><a href="/en/docs/mt5/api/reportapi_dataset/imtdatasetfield/imtdatasetfield_id" class="topiclink">Id</a></span></p></td><td class="table"><p class="p_fortable"><span class="f_fortable">Get and set the field ID.</span></p></td></tr><tr class="table"><td class="table" style="width:170px;"><p class="p_fortable"><span class="f_fortable"><a href="/en/docs/mt5/api/reportapi_dataset/imtdatasetfield/imtdatasetfield_type" class="topiclink">Type</a></span></p></td><td class="table"><p class="p_fortable"><span class="f_fortable">Get the field type.</span></p></td></tr><tr class="table"><td class="table" style="width:170px;"><p class="p_fortable"><span class="f_fortable"><a href="/en/docs/mt5/api/reportapi_dataset/imtdatasetfield/imtdatasetfield_offset" class="topiclink">Offset</a></span></p></td><td class="table"><p class="p_fortable"><span class="f_fortable">Get and set the offset inside one entry defining the data beginning.</span></p></td></tr><tr class="table"><td class="table" style="width:170px;"><p class="p_fortable"><span class="f_fortable"><a href="/en/docs/mt5/api/reportapi_dataset/imtdatasetfield/imtdatasetfield_size" class="topiclink">Size</a></span></p></td><td class="table"><p class="p_fortable"><span class="f_fortable">Get and set the size of the field data in bytes.</span></p></td></tr><tr class="table"><td class="table" style="width:170px;"><p class="p_fortable"><span class="f_fortable"><a href="/en/docs/mt5/api/reportapi_dataset/imtdatasetfield/imtdatasetfield_flags" class="topiclink">Flags</a></span></p></td><td class="table"><p class="p_fortable"><span class="f_fortable">Get and set the field flags.</span></p></td></tr><tr class="table"><td class="table" style="width:170px;"><p class="p_fortable"><span class="f_fortable"><a href="/en/docs/mt5/api/reportapi_dataset/imtdatasetfield/imtdatasetfield_whereaddint" class="topiclink">WhereAddInt</a></span></p></td><td class="table"><p class="p_fortable"><span class="f_fortable">Add a selection condition for fields of the int type.</span></p></td></tr><tr class="table"><td class="table" style="width:170px;"><p class="p_fortable"><span class="f_fortable"><a href="/en/docs/mt5/api/reportapi_dataset/imtdatasetfield/imtdatasetfield_whereaddintarray" class="topiclink">WhereAddIntArray</a></span></p></td><td class="table"><p class="p_fortable"><span class="f_fortable">Add an array of selection conditions for fields of the int type.</span></p></td></tr><tr class="table"><td class="table" style="width:170px;"><p class="p_fortable"><span class="f_fortable"><a href="/en/docs/mt5/api/reportapi_dataset/imtdatasetfield/imtdatasetfield_whereadduint" class="topiclink">WhereAddUInt</a></span></p></td><td class="table"><p class="p_fortable"><span class="f_fortable">Add a selection condition for fields of the uint type.</span></p></td></tr><tr class="table"><td class="table" style="width:170px;"><p class="p_fortable"><span class="f_fortable"><a href="/en/docs/mt5/api/reportapi_dataset/imtdatasetfield/imtdatasetfield_whereadduintarray" class="topiclink">WhereAddUIntArray</a></span></p></td><td class="table"><p class="p_fortable"><span class="f_fortable">Add an array of selection conditions for fields of the uint type.</span></p></td></tr><tr class="table"><td class="table" style="width:170px;"><p class="p_fortable"><span class="f_fortable"><a href="/en/docs/mt5/api/reportapi_dataset/imtdatasetfield/imtdatasetfield_whereadddouble" class="topiclink">WhereAddDouble</a></span></p></td><td class="table"><p class="p_fortable"><span class="f_fortable">Add a selection condition for fields of the double type.</span></p></td></tr><tr class="table"><td class="table" style="width:170px;"><p class="p_fortable"><span class="f_fortable"><a href="/en/docs/mt5/api/reportapi_dataset/imtdatasetfield/imtdatasetfield_whereadddoublearray" class="topiclink">WhereAddDoubleArray</a></span></p></td><td class="table"><p class="p_fortable"><span class="f_fortable">Add an array of selection conditions for fields of the double type.</span></p></td></tr><tr class="table"><td class="table" style="width:170px;"><p class="p_fortable"><span class="f_fortable"><a href="/en/docs/mt5/api/reportapi_dataset/imtdatasetfield/imtdatasetfield_whereaddstring" class="topiclink">WhereAddString</a></span></p></td><td class="table"><p class="p_fortable"><span class="f_fortable">Add a selection condition for fields of the string type.</span></p></td></tr><tr class="table"><td class="table" style="width:170px;"><p class="p_fortable"><span class="f_fortable"><a href="/en/docs/mt5/api/reportapi_dataset/imtdatasetfield/imtdatasetfield_whereaddstringarray" class="topiclink">WhereAddStringArray</a></span></p></td><td class="table"><p class="p_fortable"><span class="f_fortable">Add an array of selection conditions for fields of the string type.</span></p></td></tr><tr class="table"><td class="table" style="width:170px;"><p class="p_fortable"><span class="f_fortable"><a href="/en/docs/mt5/api/reportapi_dataset/imtdatasetfield/imtdatasetfield_betweenint" class="topiclink">BetweenInt</a></span></p></td><td class="table"><p class="p_fortable"><span class="f_fortable">Add a selection condition as a range of values for fields of the int type.</span></p></td></tr><tr class="table"><td class="table" style="width:170px;"><p class="p_fortable"><span class="f_fortable"><a href="/en/docs/mt5/api/reportapi_dataset/imtdatasetfield/imtdatasetfield_betweenuint" class="topiclink">BetweenUInt</a></span></p></td><td class="table"><p class="p_fortable"><span class="f_fortable">Add a selection condition as a range of values for fields of the uint type.</span></p></td></tr><tr class="table"><td class="table" style="width:170px;"><p class="p_fortable"><span class="f_fortable"><a href="/en/docs/mt5/api/reportapi_dataset/imtdatasetfield/imtdatasetfield_betweendouble" class="topiclink">BetweenDouble</a></span></p></td><td class="table"><p class="p_fortable"><span class="f_fortable">Add a selection condition as a range of values for fields of the double type.</span></p></td></tr></tbody></table>
+
+The IMTDataset interface contains the following enumerations:
+
+<table class="table" cellspacing="0" cellpadding="5" border="1"><thead><tr class="table"><th class="table" style="width:170px;"><p class="p_fortable"><span class="f_fortable" style="font-weight: bold;">Enumeration</span></p></th><th class="table"><p class="p_fortable"><span class="f_fortable" style="font-weight: bold;">Description</span></p></th></tr></thead><tbody><tr class="table"><td class="table" style="width:170px;"><p class="p_fortable"><span class="f_fortable"><a href="/en/docs/mt5/api/reportapi_dataset/imtdatasetfield/imtdatasetfield_enum#enfieldtype" class="topiclink">EnFieldType</a></span></p></td><td class="table"><p class="p_fortable"><span class="f_fortable">Types of fields.</span></p></td></tr><tr class="table"><td class="table" style="width:170px;"><p class="p_fortable"><span class="f_fortable"><a href="/en/docs/mt5/api/reportapi_dataset/imtdatasetfield/imtdatasetfield_enum#enfieldid" class="topiclink">EnFieldId</a></span></p></td><td class="table"><p class="p_fortable"><span class="f_fortable">Field IDs.</span></p></td></tr><tr class="table"><td class="table" style="width:170px;"><p class="p_fortable"><span class="f_fortable"><a href="/en/docs/mt5/api/reportapi_dataset/imtdatasetfield/imtdatasetfield_enum#enfieldflags" class="topiclink">EnFieldFlags</a></span></p></td><td class="table"><p class="p_fortable"><span class="f_fortable">Field flags.</span></p></td></tr><tr class="table"><td class="table" style="width:170px;"><p class="p_fortable"><span class="f_fortable"><a href="/en/docs/mt5/api/reportapi_dataset/imtdatasetfield/imtdatasetfield_enum#engender" class="topiclink">EnGender</a></span></p></td><td class="table"><p class="p_fortable"><span class="f_fortable">Values of the "Gender" property.</span></p></td></tr><tr class="table"><td class="table" style="width:170px;"><p class="p_fortable"><span class="f_fortable"><a href="/en/docs/mt5/api/reportapi_dataset/imtdatasetfield/imtdatasetfield_enum#enclienttype" class="topiclink">EnClientType</a></span></p></td><td class="table"><p class="p_fortable"><span class="f_fortable">Client types.</span></p></td></tr><tr class="table"><td class="table" style="width:170px;"><p class="p_fortable"><span class="f_fortable"><a href="/en/docs/mt5/api/reportapi_dataset/imtdatasetfield/imtdatasetfield_enum#enclientstatus" class="topiclink">EnClientStatus</a></span></p></td><td class="table"><p class="p_fortable"><span class="f_fortable">Client statuses.</span></p></td></tr><tr class="table"><td class="table" style="width:170px;"><p class="p_fortable"><span class="f_fortable"><a href="/en/docs/mt5/api/reportapi_dataset/imtdatasetfield/imtdatasetfield_enum#enemployment" class="topiclink">EnEmployment</a></span></p></td><td class="table"><p class="p_fortable"><span class="f_fortable">Client types by employment.</span></p></td></tr><tr class="table"><td class="table" style="width:170px;"><p class="p_fortable"><span class="f_fortable"><a href="/en/docs/mt5/api/reportapi_dataset/imtdatasetfield/imtdatasetfield_enum#enemploymentindustry" class="topiclink">EnEmploymentIndustry</a></span></p></td><td class="table"><p class="p_fortable"><span class="f_fortable">Client employment areas.</span></p></td></tr><tr class="table"><td class="table" style="width:170px;"><p class="p_fortable"><span class="f_fortable"><a href="/en/docs/mt5/api/reportapi_dataset/imtdatasetfield/imtdatasetfield_enum#eneducationlevel" class="topiclink">EnEducationLevel</a></span></p></td><td class="table"><p class="p_fortable"><span class="f_fortable">Client education levels.</span></p></td></tr><tr class="table"><td class="table" style="width:170px;"><p class="p_fortable"><span class="f_fortable"><a href="/en/docs/mt5/api/reportapi_dataset/imtdatasetfield/imtdatasetfield_enum#enwealthsource" class="topiclink">EnWealthSource</a></span></p></td><td class="table"><p class="p_fortable"><span class="f_fortable">Clients' income sources.</span></p></td></tr><tr class="table"><td class="table" style="width:170px;"><p class="p_fortable"><span class="f_fortable"><a href="/en/docs/mt5/api/reportapi_dataset/imtdatasetfield/imtdatasetfield_enum#enpreferredcommunication" class="topiclink">EnPreferredCommunication</a></span></p></td><td class="table"><p class="p_fortable"><span class="f_fortable">Preferred contact methods.</span></p></td></tr><tr class="table"><td class="table" style="width:170px;"><p class="p_fortable"><span class="f_fortable"><a href="/en/docs/mt5/api/reportapi_dataset/imtdatasetfield/imtdatasetfield_enum#entradingexperience" class="topiclink">EnTradingExperience</a></span></p></td><td class="table"><p class="p_fortable"><span class="f_fortable">Clients' trading experience.</span></p></td></tr></tbody></table>
+
+[SummaryTotal](/en/docs/mt5/api/reportapi_dataset/imtdataset/imtdataset_summarytotal)
+
+[Enumerations](/en/docs/mt5/api/reportapi_dataset/imtdatasetfield/imtdatasetfield_enum)

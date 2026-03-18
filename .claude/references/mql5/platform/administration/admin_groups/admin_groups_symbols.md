@@ -1,0 +1,103 @@
+# Symbol Settings of Groups
+
+> Source: https://support.metaquotes.net/en/docs/mt5/platform/administration/admin_groups/admin_groups_symbols
+
+-   [MetaTrader 5](/en/docs/mt5)
+    -   [Platform](/en/docs/mt5/platform)
+        -   [Platform Installation](/en/docs/mt5/platform/platform_installation)
+        -   [Platform Components](/en/docs/mt5/platform/components)
+        -   [Platform Setup](/en/docs/mt5/platform/administration)
+            -   [General Information](/en/docs/mt5/platform/administration/common_info)
+            -   [Start Page](/en/docs/mt5/platform/administration/admin_start)
+            -   [Network cluster](/en/docs/mt5/platform/administration/admin_network)
+            -   [Integrations](/en/docs/mt5/platform/administration/integration)
+            -   [Security](/en/docs/mt5/platform/administration/security)
+            -   [Automations](/en/docs/mt5/platform/administration/automation)
+            -   [Time](/en/docs/mt5/platform/administration/admin_time)
+            -   [Holidays](/en/docs/mt5/platform/administration/admin_holidays)
+            -   [Leverages](/en/docs/mt5/platform/administration/leverages)
+            -   [Groups](/en/docs/mt5/platform/administration/admin_groups)
+                -   [Group Settings](/en/docs/mt5/platform/administration/admin_groups/groups_settings)
+                -   [Group Symbol Settings](/en/docs/mt5/platform/administration/admin_groups/admin_groups_symbols)
+                    -   [Common](/en/docs/mt5/platform/administration/admin_groups/admin_groups_symbols/group_symbols_common)
+                    -   [Trade](/en/docs/mt5/platform/administration/admin_groups/admin_groups_symbols/group_symbols_trade)
+                    -   [Execution](/en/docs/mt5/platform/administration/admin_groups/admin_groups_symbols/group_symbols_execution)
+                    -   [Margin](/en/docs/mt5/platform/administration/admin_groups/admin_groups_symbols/group_symbols_margin)
+                    -   [Margin Rates](/en/docs/mt5/platform/administration/admin_groups/admin_groups_symbols/group_symbols_marginrates)
+                    -   [Swaps](/en/docs/mt5/platform/administration/admin_groups/admin_groups_symbols/group_symbols_swaps)
+                -   [Commission Settings](/en/docs/mt5/platform/administration/admin_groups/groups_comissions)
+                -   [Group Types](/en/docs/mt5/platform/administration/admin_groups/group_types)
+                -   [Import of Groups](/en/docs/mt5/platform/administration/admin_groups/group_import)
+                -   [Extended Authentication Setup](/en/docs/mt5/platform/administration/admin_groups/group_extended_authentication)
+                -   [Position Accounting Systems](/en/docs/mt5/platform/administration/admin_groups/group_position)
+            -   [Clients](/en/docs/mt5/platform/administration/clients)
+            -   [Accounts](/en/docs/mt5/platform/administration/admin_accounts)
+            -   [Payments](/en/docs/mt5/platform/administration/payments)
+            -   [Managers](/en/docs/mt5/platform/administration/admin_managers)
+            -   [Orders](/en/docs/mt5/platform/administration/admin_orders)
+            -   [Deals](/en/docs/mt5/platform/administration/admin_deals)
+            -   [Positions](/en/docs/mt5/platform/administration/admin_positions)
+            -   [Gateways](/en/docs/mt5/platform/administration/admin_gateways)
+            -   [Data Feeds](/en/docs/mt5/platform/administration/admin_feeds)
+            -   [Plugins](/en/docs/mt5/platform/administration/admin_plugins)
+            -   [Reports](/en/docs/mt5/platform/administration/admin_reports)
+            -   [Ultency](/en/docs/mt5/platform/administration/ultency)
+            -   [ECN](/en/docs/mt5/platform/administration/ecn)
+            -   [Routing](/en/docs/mt5/platform/administration/requests_routing)
+            -   [Funds & ETF](/en/docs/mt5/platform/administration/fund_etf)
+            -   [Symbols](/en/docs/mt5/platform/administration/admin_symbols)
+            -   [Spreads](/en/docs/mt5/platform/administration/spreads)
+            -   [1 Minute History Charts](/en/docs/mt5/platform/administration/admin_charts)
+            -   [Bid/Ask/Last Ticks](/en/docs/mt5/platform/administration/admin_ticks)
+            -   [Synchronization](/en/docs/mt5/platform/administration/admin_synchronization)
+            -   [Subscriptions](/en/docs/mt5/platform/administration/subscriptions)
+            -   [Mailbox](/en/docs/mt5/platform/administration/mail)
+            -   [Live Update](/en/docs/mt5/platform/administration/admin_update)
+        -   [Migration from MetaTrader 4](/en/docs/mt5/platform/migration)
+        -   [App Store](/en/docs/mt5/platform/appstore)
+        -   [Technical Support](/en/docs/mt5/platform/support)
+        -   [Additional Features](/en/docs/mt5/platform/additional)
+    -   [Administrator](/en/docs/mt5/platform/administrator)
+    -   [Manager](/en/docs/mt5/manager)
+    -   [Client terminal](/en/docs/mt5/client)
+    -   [MetaEditor](/en/docs/mt5/metaeditor)
+    -   [iPhone/iPad](/en/docs/mt5/iphone)
+    -   [Android](/en/docs/mt5/android)
+    -   [WebTerminal](/en/docs/mt5/platform/components/web_terminal)
+    -   [API](/en/docs/mt5/api)
+-   [MetaTrader 4](/en/docs/mt4)
+    -   [Administrator](/en/docs/mt4/administrator)
+    -   [Manager](/en/docs/mt4/manager)
+    -   [Client terminal](/en/docs/mt4/terminal)
+    -   [MetaEditor](/en/docs/mt4/metaeditor)
+    -   [WebTerminal](/en/docs/mt4/administrator/web_terminal)
+    -   [MultiTerminal](/en/docs/mt4/multiterminal)
+    -   [API](/en/docs/mt4/api)
+-   [Finteza](/en/docs/finteza)
+    -   [CMS Plugins](/en/docs/finteza/plugins)
+    -   [Finteza JavaScript Client](/en/docs/finteza/javascript-client)
+    -   [Finteza SDK](/en/docs/finteza/sdk)
+-   [MQL5.community](/en/docs/community)
+
+window.fz('show', 'fotcgrjxafakglznxzxkinbtytrjklzamk');
+
+[MetaTrader 5](/en/docs/mt5)[Platform](/en/docs/mt5/platform)[Platform Setup](/en/docs/mt5/platform/administration)[Groups](/en/docs/mt5/platform/administration/admin_groups)Group Symbol Settings
+
+# Symbol Settings of Groups
+
+Group symbols are set up on the ["Symbols"](/en/docs/mt5/platform/administration/admin_groups/groups_settings#symbols) tab when creating or editing a group.
+
+<table class="attentable" cellspacing="0" cellpadding="8" border="1"><tbody><tr class="attentable"><td class="attentable"><p class="p_tableatten"><span class="f_tableatten">If several individual configurations are created for the same symbol (for example, there is a configuration for all symbols by mask "*", and a configuration for a specific symbol), then every configuration will be applied sequentially from the top downwards. And if a parameter in the configurations is set to "Default", it means that it won't be changed. For example:</span></p><ul><li class="p_tableatten"><span class="f_tableatten">A symbol has minimal and maximal volume set to 0.01 lot and 100 lots on default.</span></li><li class="p_tableatten"><span class="f_tableatten">A configuration is added for the group where the minimal and maximal volume is overridden to 0.1 lot and 150 lots respectively.</span></li><li class="p_tableatten"><span class="f_tableatten">Another configuration is added with settings "Use default volumes" and Spread difference = 5.</span></li></ul><p class="p_tableatten"><span class="f_tableatten">The last configuration will not reset the minimal and maximal volume to default 0.01 lots and 100 lots respectively. Values 0.1 and 150 will be used.</span></p></td></tr></tbody></table>
+
+When you add or edit symbols, a window with five tabs will appear:
+
+-   [Common](/en/docs/mt5/platform/administration/admin_groups/admin_groups_symbols/group_symbols_common)
+-   [Trade](/en/docs/mt5/platform/administration/admin_groups/admin_groups_symbols/group_symbols_trade)
+-   [Execution](/en/docs/mt5/platform/administration/admin_groups/admin_groups_symbols/group_symbols_execution)
+-   [Margin](/en/docs/mt5/platform/administration/admin_groups/admin_groups_symbols/group_symbols_margin)
+-   [Margin Rates](/en/docs/mt5/platform/administration/admin_groups/admin_groups_symbols/group_symbols_marginrates)
+-   [Swaps](/en/docs/mt5/platform/administration/admin_groups/admin_groups_symbols/group_symbols_swaps)
+
+[Group Settings](/en/docs/mt5/platform/administration/admin_groups/groups_settings)
+
+[Common](/en/docs/mt5/platform/administration/admin_groups/admin_groups_symbols/group_symbols_common)

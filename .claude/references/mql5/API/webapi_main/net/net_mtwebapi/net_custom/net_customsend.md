@@ -1,0 +1,123 @@
+# MT5WebAPI.CustomSend
+
+> Source: https://support.metaquotes.net/en/docs/mt5/api/webapi_main/net/net_mtwebapi/net_custom/net_customsend
+
+-   [MetaTrader 5](/en/docs/mt5)
+    -   [Platform](/en/docs/mt5/platform)
+    -   [Administrator](/en/docs/mt5/platform/administrator)
+    -   [Manager](/en/docs/mt5/manager)
+    -   [Client terminal](/en/docs/mt5/client)
+    -   [MetaEditor](/en/docs/mt5/metaeditor)
+    -   [iPhone/iPad](/en/docs/mt5/iphone)
+    -   [Android](/en/docs/mt5/android)
+    -   [WebTerminal](/en/docs/mt5/platform/components/web_terminal)
+    -   [API](/en/docs/mt5/api)
+        -   [Getting Started](/en/docs/mt5/api/getting_started)
+        -   [Server API](/en/docs/mt5/api/serverapi)
+        -   [Manager API](/en/docs/mt5/api/managerapi)
+        -   [Gateway API](/en/docs/mt5/api/gatewayapi)
+        -   [Report API](/en/docs/mt5/api/reportapi)
+        -   [Web API](/en/docs/mt5/api/webapi)
+            -   [Getting Started](/en/docs/mt5/api/webapi_preparing)
+            -   [Format of Commands](/en/docs/mt5/api/webapi_https)
+            -   [Authentication](/en/docs/mt5/api/webapi_rest_authentication)
+            -   [Escaping Special Characters](/en/docs/mt5/api/webapi_screening)
+            -   [Maintaining Connections](/en/docs/mt5/api/webapi_pings)
+            -   [Protocol Extension](/en/docs/mt5/api/webapi_protocol_extension)
+            -   [Examples](/en/docs/mt5/api/webapi_examples)
+            -   [Manager Interface (Rest API)](/en/docs/mt5/api/webapi_main)
+                -   [Configuration Databases](/en/docs/mt5/api/webapi_main/webapi_config)
+                -   [Trading](/en/docs/mt5/api/webapi_main/webapi_trading)
+                -   [Users](/en/docs/mt5/api/webapi_main/webapi_users)
+                -   [Clients](/en/docs/mt5/api/webapi_main/webapi_client)
+                -   [Mail](/en/docs/mt5/api/webapi_main/webapi_mail)
+                -   [News](/en/docs/mt5/api/webapi_main/webapi_news)
+                -   [Prices](/en/docs/mt5/api/webapi_main/webapi_prices)
+                -   [Daily Reports](/en/docs/mt5/api/webapi_main/webapi_daily)
+                -   [Settings Files](/en/docs/mt5/api/webapi_main/webapi_setting)
+                -   [Subscriptions](/en/docs/mt5/api/webapi_main/webapi_subscription)
+                -   [Common Requests](/en/docs/mt5/api/webapi_main/webapi_common_request)
+                -   [Outdated version of Rest API](/en/docs/mt5/api/webapi_main/webapi_old)
+                -   [PHP Implementation of Protocol](/en/docs/mt5/api/webapi_main/php)
+                -   [.NET Implementation of Protocol](/en/docs/mt5/api/webapi_main/net)
+                    -   [MT5WebAPI Class](/en/docs/mt5/api/webapi_main/net/net_mtwebapi)
+                        -   [Constructor](/en/docs/mt5/api/webapi_main/net/net_mtwebapi/net_constructor)
+                        -   [Enumerations](/en/docs/mt5/api/webapi_main/net/net_mtwebapi/net_enum)
+                        -   [Connect/Disconnect](/en/docs/mt5/api/webapi_main/net/net_mtwebapi/net_connect_disconnect)
+                        -   [Logging Management](/en/docs/mt5/api/webapi_main/net/net_mtwebapi/net_logging)
+                        -   [Service Commands](/en/docs/mt5/api/webapi_main/net/net_mtwebapi/net_service)
+                        -   [Common Configuration](/en/docs/mt5/api/webapi_main/net/net_mtwebapi/net_common)
+                        -   [Timing](/en/docs/mt5/api/webapi_main/net/net_mtwebapi/net_time)
+                        -   [Groups](/en/docs/mt5/api/webapi_main/net/net_mtwebapi/net_group)
+                        -   [Symbols](/en/docs/mt5/api/webapi_main/net/net_mtwebapi/net_symbol)
+                        -   [Clients](/en/docs/mt5/api/webapi_main/net/net_mtwebapi/net_user)
+                        -   [Orders](/en/docs/mt5/api/webapi_main/net/net_mtwebapi/net_order)
+                        -   [Deals](/en/docs/mt5/api/webapi_main/net/net_mtwebapi/net_deal)
+                        -   [Positions](/en/docs/mt5/api/webapi_main/net/net_mtwebapi/net_position)
+                        -   [Trade](/en/docs/mt5/api/webapi_main/net/net_mtwebapi/net_trade)
+                        -   [Mailbox](/en/docs/mt5/api/webapi_main/net/net_mtwebapi/net_mail)
+                        -   [News Event](/en/docs/mt5/api/webapi_main/net/net_mtwebapi/net_news)
+                        -   [Prices](/en/docs/mt5/api/webapi_main/net/net_mtwebapi/net_tick)
+                        -   [Custom Commands](/en/docs/mt5/api/webapi_main/net/net_mtwebapi/net_custom)
+                            -   [CustomSend](/en/docs/mt5/api/webapi_main/net/net_mtwebapi/net_custom/net_customsend)
+                    -   [WebTrader](/en/docs/mt5/api/webapi_main/net/net_webtrader)
+        -   [SQL Export](/en/docs/mt5/api/sql_export)
+        -   [Internal Data Types](/en/docs/mt5/api/reference_types)
+        -   [Journal Constants](/en/docs/mt5/api/journal)
+        -   [Return Codes](/en/docs/mt5/api/reference_retcodes)
+        -   [Structures](/en/docs/mt5/api/reference_structures)
+        -   [Configuration Interfaces](/en/docs/mt5/api/reference_configurations)
+        -   [Database Interfaces](/en/docs/mt5/api/reference_bases)
+        -   [Tools](/en/docs/mt5/api/reference_tools)
+        -   [Development Features](/en/docs/mt5/api/features)
+        -   [List of Events](/en/docs/mt5/api/event_list)
+        -   [List of Hooks](/en/docs/mt5/api/hook_list)
+-   [MetaTrader 4](/en/docs/mt4)
+    -   [Administrator](/en/docs/mt4/administrator)
+    -   [Manager](/en/docs/mt4/manager)
+    -   [Client terminal](/en/docs/mt4/terminal)
+    -   [MetaEditor](/en/docs/mt4/metaeditor)
+    -   [WebTerminal](/en/docs/mt4/administrator/web_terminal)
+    -   [MultiTerminal](/en/docs/mt4/multiterminal)
+    -   [API](/en/docs/mt4/api)
+-   [Finteza](/en/docs/finteza)
+    -   [CMS Plugins](/en/docs/finteza/plugins)
+    -   [Finteza JavaScript Client](/en/docs/finteza/javascript-client)
+    -   [Finteza SDK](/en/docs/finteza/sdk)
+-   [MQL5.community](/en/docs/community)
+
+window.fz('show', 'fotcgrjxafakglznxzxkinbtytrjklzamk');
+
+[MetaTrader 5](/en/docs/mt5)[API](/en/docs/mt5/api)[Web API](/en/docs/mt5/api/webapi)[Manager Interface (Rest API)](/en/docs/mt5/api/webapi_main)[.NET Implementation of Protocol](/en/docs/mt5/api/webapi_main/net)[MT5WebAPI Class](/en/docs/mt5/api/webapi_main/net/net_mtwebapi)[Custom Commands](/en/docs/mt5/api/webapi_main/net/net_mtwebapi/net_custom)CustomSend
+
+# MT5WebAPI.CustomSend
+
+Send a custom command to the server.
+
+<table class="help" cellspacing="0" cellpadding="3" border="0" style="border:none; border-spacing:0;"><tbody><tr><td style="vertical-align:top; padding:3px; border:none"><p class="p_CodeExample"><span class="f_Keywords">MTRetCode&nbsp;&nbsp;</span><span class="f_Functions">MT5WebAPI.CustomSend</span><span class="f_CodeExample">(</span><br><span class="f_CodeExample">&nbsp;&nbsp;&nbsp;</span><span class="f_Keywords">string</span><span class="f_CodeExample">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span><span class="f_Param">command</span><span class="f_CodeExample">,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span><span class="f_Comments">//&nbsp;Command</span><br><span class="f_CodeExample">&nbsp;&nbsp;&nbsp;</span><span class="f_Keywords">Dictionary(string,string)</span><span class="f_CodeExample">&nbsp;&nbsp;</span><span class="f_Param">parameters</span><span class="f_CodeExample">,&nbsp;&nbsp;</span><span class="f_Comments">//&nbsp;Parameter</span><br><span class="f_CodeExample">&nbsp;&nbsp;&nbsp;</span><span class="f_Keywords">byte[]</span><span class="f_CodeExample">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span><span class="f_Param">body</span><span class="f_CodeExample">,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span><span class="f_Comments">//&nbsp;Additional&nbsp;body</span><br><span class="f_CodeExample">&nbsp;&nbsp;&nbsp;</span><span class="f_Keywords">out&nbsp;string</span><span class="f_CodeExample">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span><span class="f_Param">answer</span><span class="f_CodeExample">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span><span class="f_Comments">//&nbsp;Server&nbsp;response</span><br><span class="f_CodeExample">&nbsp;&nbsp;&nbsp;)</span></p></td></tr></tbody></table>
+
+Parameters
+
+command
+
+\[in\]  A custom command.
+
+parameters
+
+\[in\]  Array of parameters of the custom command.
+
+body
+
+\[in\]  Additional body of the command.
+
+answer
+
+\[out\]  Server response. Both a response command and an additional body can be returned in the response.
+
+Return Value
+
+An indication of successful completion is the [MT\_RET\_OK](/en/docs/mt5/api/retcodes_successful) response code. Otherwise, an error has occurred that corresponds to the response code.
+
+[Custom Commands](/en/docs/mt5/api/webapi_main/net/net_mtwebapi/net_custom)
+
+[WebTrader](/en/docs/mt5/api/webapi_main/net/net_webtrader)

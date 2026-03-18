@@ -1,0 +1,99 @@
+# Ivey Purchasing Managers Index
+
+> Source: https://support.metaquotes.net/en/docs/mt5/client/fundamental/economic_indicators_canada/cad_ivey_pmi
+
+-   [MetaTrader 5](/en/docs/mt5)
+    -   [Platform](/en/docs/mt5/platform)
+    -   [Administrator](/en/docs/mt5/platform/administrator)
+    -   [Manager](/en/docs/mt5/manager)
+    -   [Client terminal](/en/docs/mt5/client)
+        -   [Getting Started](/en/docs/mt5/client/startworking)
+        -   [Trading Operations](/en/docs/mt5/client/trading)
+        -   [Price Charts, Technical and Fundamental Analysis](/en/docs/mt5/client/charts_analysis)
+            -   [View and Configure Charts](/en/docs/mt5/client/charts)
+            -   [Publish Online](/en/docs/mt5/client/mql5_charts)
+            -   [Technical Indicators](/en/docs/mt5/client/indicators)
+            -   [Analytical Objects](/en/docs/mt5/client/objects)
+            -   [Fundamental Analysis](/en/docs/mt5/client/fundamental)
+                -   [USA](/en/docs/mt5/client/fundamental/economic_indicators_usa)
+                -   [European Union](/en/docs/mt5/client/fundamental/economic_indicators_euro)
+                -   [United Kingdom](/en/docs/mt5/client/fundamental/economic_indicators_uk)
+                -   [Japan](/en/docs/mt5/client/fundamental/economic_indicators_japan)
+                -   [Germany](/en/docs/mt5/client/fundamental/economic_indicators_ger)
+                -   [Switzerland](/en/docs/mt5/client/fundamental/economic_indicators_switzerland)
+                -   [Australia](/en/docs/mt5/client/fundamental/economic_indicators_australia)
+                -   [Canada](/en/docs/mt5/client/fundamental/economic_indicators_canada)
+                    -   [Average Weekly Earnings](/en/docs/mt5/client/fundamental/economic_indicators_canada/cad_average_weekly_earnings)
+                    -   [BOC Interest Rate Decision](/en/docs/mt5/client/fundamental/economic_indicators_canada/cad_interest_rate_decision)
+                    -   [Building Permits](/en/docs/mt5/client/fundamental/economic_indicators_canada/cad_building_permits)
+                    -   [Capacity Utilization](/en/docs/mt5/client/fundamental/economic_indicators_canada/cad_capacity_utilization)
+                    -   [Consumer Price Index](/en/docs/mt5/client/fundamental/economic_indicators_canada/cad_consumer_price_index)
+                    -   [Core CPI](/en/docs/mt5/client/fundamental/economic_indicators_canada/cad_core_cpi)
+                    -   [Current Account](/en/docs/mt5/client/fundamental/economic_indicators_canada/cad_current_account)
+                    -   [Gross Domestic Product](/en/docs/mt5/client/fundamental/economic_indicators_canada/cad_gdp)
+                    -   [Housing Starts](/en/docs/mt5/client/fundamental/economic_indicators_canada/cad_housing_starts)
+                    -   [International Transactions in Securities](/en/docs/mt5/client/fundamental/economic_indicators_canada/cad_international_security)
+                    -   [Ivey Purchasing Managers Index](/en/docs/mt5/client/fundamental/economic_indicators_canada/cad_ivey_pmi)
+                    -   [Labor Productivity](/en/docs/mt5/client/fundamental/economic_indicators_canada/cad_labor_productivity)
+                    -   [Leading Indicators](/en/docs/mt5/client/fundamental/economic_indicators_canada/cad_leading_indicators)
+                    -   [Manufacturing Survey Shipments](/en/docs/mt5/client/fundamental/economic_indicators_canada/cad_manufacturing_survey_shipments)
+                    -   [New Housing Price Index](/en/docs/mt5/client/fundamental/economic_indicators_canada/cad_new_housing_price_index)
+                    -   [New Vehicle Sales](/en/docs/mt5/client/fundamental/economic_indicators_canada/cad_new_vehicle_sales)
+                    -   [Overnight Rate Target](/en/docs/mt5/client/fundamental/economic_indicators_canada/cad_overnight_rate_target)
+                    -   [Payroll Employment](/en/docs/mt5/client/fundamental/economic_indicators_canada/cad_payroll_employment)
+                    -   [Producer Price Index](/en/docs/mt5/client/fundamental/economic_indicators_canada/cad_producer_price_index)
+                    -   [Raw Materials Price Index](/en/docs/mt5/client/fundamental/economic_indicators_canada/cad_raw_materials_price_index)
+                    -   [Retail Sales](/en/docs/mt5/client/fundamental/economic_indicators_canada/cad_retail_sales)
+                    -   [Retail Sales Excluding Motor Vehicles](/en/docs/mt5/client/fundamental/economic_indicators_canada/cad_retail_sales_ex_vehicles)
+                    -   [Trade Balance](/en/docs/mt5/client/fundamental/economic_indicators_canada/cad_trade_balance)
+                    -   [Unemployment Rate](/en/docs/mt5/client/fundamental/economic_indicators_canada/cad_unemployment_rate)
+                    -   [Unit Labor Cost](/en/docs/mt5/client/fundamental/economic_indicators_canada/cad_unit_labor_cost)
+                    -   [Wholesale Inventories](/en/docs/mt5/client/fundamental/economic_indicators_canada/cad_wholesale_inventories)
+                    -   [Wholesale Sales](/en/docs/mt5/client/fundamental/economic_indicators_canada/cad_wholesale_sales)
+                -   [China](/en/docs/mt5/client/fundamental/economic_indicators_china)
+                -   [New Zealand](/en/docs/mt5/client/fundamental/economic_indicators_newzealand)
+            -   [Additional Technical Indicators](/en/docs/mt5/client/charts_analysis_get_indicators)
+            -   [Additional Features](/en/docs/mt5/client/charts_advanced)
+        -   [Algorithmic Trading, Trading Robots](/en/docs/mt5/client/algotrading)
+        -   [Trading Signals and Copy Trading](/en/docs/mt5/client/signals)
+        -   [Market App Store](/en/docs/mt5/client/market)
+        -   [MQL5 Cloud Network](/en/docs/mt5/client/mql5cloud)
+        -   [Virtual Hosting for 24/7 Operation](/en/docs/mt5/client/virtual_hosting)
+        -   [Mobile Trading](/en/docs/mt5/client/mobile_trading)
+        -   [MQL5 Algotrading community](/en/docs/mt5/client/mql5community)
+    -   [MetaEditor](/en/docs/mt5/metaeditor)
+    -   [iPhone/iPad](/en/docs/mt5/iphone)
+    -   [Android](/en/docs/mt5/android)
+    -   [WebTerminal](/en/docs/mt5/platform/components/web_terminal)
+    -   [API](/en/docs/mt5/api)
+-   [MetaTrader 4](/en/docs/mt4)
+    -   [Administrator](/en/docs/mt4/administrator)
+    -   [Manager](/en/docs/mt4/manager)
+    -   [Client terminal](/en/docs/mt4/terminal)
+    -   [MetaEditor](/en/docs/mt4/metaeditor)
+    -   [WebTerminal](/en/docs/mt4/administrator/web_terminal)
+    -   [MultiTerminal](/en/docs/mt4/multiterminal)
+    -   [API](/en/docs/mt4/api)
+-   [Finteza](/en/docs/finteza)
+    -   [CMS Plugins](/en/docs/finteza/plugins)
+    -   [Finteza JavaScript Client](/en/docs/finteza/javascript-client)
+    -   [Finteza SDK](/en/docs/finteza/sdk)
+-   [MQL5.community](/en/docs/community)
+
+window.fz('show', 'fotcgrjxafakglznxzxkinbtytrjklzamk');
+
+[MetaTrader 5](/en/docs/mt5)[Client terminal](/en/docs/mt5/client)[Price Charts, Technical and Fundamental Analysis](/en/docs/mt5/client/charts_analysis)[Fundamental Analysis](/en/docs/mt5/client/fundamental)[Canada](/en/docs/mt5/client/fundamental/economic_indicators_canada)Ivey Purchasing Managers Index
+
+# Ivey Purchasing Managers Index
+
+The indicator reflects the [level of business activity of the industrial sector](https://www.mql5.com/en/economic-calendar/canada/ivey-pmi). More than one and a half hundred managers from different regions and sectors are asked to assess the level of their purchases as compared to the previous month (higher, lower or the same). The value above 50 indicates an increase in purchases, a value below 50 indicates a decrease.
+
+This indicator can be used to measure business optimism and forecast economic growth. Companies increase purchases and spending in response to growing demand for their goods and services.
+
+-   Release Frequency: monthly.
+-   Release Schedule: 10:00 EST, on the fourth working day of the month following the reporting period.
+-   Source: Purchasing Management Association of Canada, the Richard Ivey School of Business.
+
+[International Transactions in Securities](/en/docs/mt5/client/fundamental/economic_indicators_canada/cad_international_security)
+
+[Labor Productivity](/en/docs/mt5/client/fundamental/economic_indicators_canada/cad_labor_productivity)

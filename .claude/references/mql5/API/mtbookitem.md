@@ -1,0 +1,96 @@
+# MTBookItem
+
+> Source: https://support.metaquotes.net/en/docs/mt5/api/mtbookitem
+
+-   [MetaTrader 5](/en/docs/mt5)
+    -   [Platform](/en/docs/mt5/platform)
+    -   [Administrator](/en/docs/mt5/platform/administrator)
+    -   [Manager](/en/docs/mt5/manager)
+    -   [Client terminal](/en/docs/mt5/client)
+    -   [MetaEditor](/en/docs/mt5/metaeditor)
+    -   [iPhone/iPad](/en/docs/mt5/iphone)
+    -   [Android](/en/docs/mt5/android)
+    -   [WebTerminal](/en/docs/mt5/platform/components/web_terminal)
+    -   [API](/en/docs/mt5/api)
+        -   [Getting Started](/en/docs/mt5/api/getting_started)
+        -   [Server API](/en/docs/mt5/api/serverapi)
+        -   [Manager API](/en/docs/mt5/api/managerapi)
+        -   [Gateway API](/en/docs/mt5/api/gatewayapi)
+        -   [Report API](/en/docs/mt5/api/reportapi)
+        -   [Web API](/en/docs/mt5/api/webapi)
+        -   [SQL Export](/en/docs/mt5/api/sql_export)
+        -   [Internal Data Types](/en/docs/mt5/api/reference_types)
+        -   [Journal Constants](/en/docs/mt5/api/journal)
+        -   [Return Codes](/en/docs/mt5/api/reference_retcodes)
+        -   [Structures](/en/docs/mt5/api/reference_structures)
+            -   [MTProxyInfo](/en/docs/mt5/api/mtproxyinfo)
+            -   [MTLicenseCheck](/en/docs/mt5/api/mtlicensecheck)
+            -   [MTTick](/en/docs/mt5/api/mttick)
+            -   [MTTickShort](/en/docs/mt5/api/mttickshort)
+            -   [MTTickRate](/en/docs/mt5/api/mttickrate)
+            -   [MTTickStat](/en/docs/mt5/api/mttickstat)
+            -   [MTMailRange](/en/docs/mt5/api/mtmailrange)
+            -   [MTLogRecord](/en/docs/mt5/api/mtlogrecord)
+            -   [MTChartBar](/en/docs/mt5/api/mtchartbar)
+            -   [MTBookItem](/en/docs/mt5/api/mtbookitem)
+            -   [MTBook/MTBookDiff](/en/docs/mt5/api/mtbook)
+            -   [MTGatewayInfo](/en/docs/mt5/api/mtgatewayinfo)
+            -   [MTNews](/en/docs/mt5/api/mtnews)
+            -   [MTEconomicEvent](/en/docs/mt5/api/mteconomicevent)
+            -   [MTReportInfo](/en/docs/mt5/api/mtreportinfo)
+            -   [MTReportParam](/en/docs/mt5/api/mtreportparam)
+            -   [MTReportServerInfo](/en/docs/mt5/api/mtreportserverinfo)
+            -   [MTPluginInfo](/en/docs/mt5/api/mtplugininfo)
+            -   [MTPluginParam](/en/docs/mt5/api/mtpluginparam)
+            -   [MTServerInfo](/en/docs/mt5/api/mtserverinfo)
+        -   [Configuration Interfaces](/en/docs/mt5/api/reference_configurations)
+        -   [Database Interfaces](/en/docs/mt5/api/reference_bases)
+        -   [Tools](/en/docs/mt5/api/reference_tools)
+        -   [Development Features](/en/docs/mt5/api/features)
+        -   [List of Events](/en/docs/mt5/api/event_list)
+        -   [List of Hooks](/en/docs/mt5/api/hook_list)
+-   [MetaTrader 4](/en/docs/mt4)
+    -   [Administrator](/en/docs/mt4/administrator)
+    -   [Manager](/en/docs/mt4/manager)
+    -   [Client terminal](/en/docs/mt4/terminal)
+    -   [MetaEditor](/en/docs/mt4/metaeditor)
+    -   [WebTerminal](/en/docs/mt4/administrator/web_terminal)
+    -   [MultiTerminal](/en/docs/mt4/multiterminal)
+    -   [API](/en/docs/mt4/api)
+-   [Finteza](/en/docs/finteza)
+    -   [CMS Plugins](/en/docs/finteza/plugins)
+    -   [Finteza JavaScript Client](/en/docs/finteza/javascript-client)
+    -   [Finteza SDK](/en/docs/finteza/sdk)
+-   [MQL5.community](/en/docs/community)
+
+window.fz('show', 'fotcgrjxafakglznxzxkinbtytrjklzamk');
+
+[MetaTrader 5](/en/docs/mt5)[API](/en/docs/mt5/api)[Structures](/en/docs/mt5/api/reference_structures)MTBookItem
+
+# MTBookItem
+
+The MTBookItem describes an entry of the Depth of Market. The structure is defined with the one-byte alignment.
+
+<table class="help" cellspacing="0" cellpadding="3" border="0" style="border:none; border-spacing:0;"><tbody><tr><td style="vertical-align:top; padding:3px; border:none"><p class="p_CodeExample"><span class="f_CodeExample" style="color: #0000ff;">#pragma&nbsp;pack(push,1)</span><br><span class="f_CodeExample" style="color: #0000ff;">struct</span><span class="f_CodeExample" style="color: #ffffff;">&nbsp;</span><span class="f_CodeExample">MTBookItem</span><br><span class="f_CodeExample" style="color: #ffffff;">&nbsp;&nbsp;</span><span class="f_CodeExample">{</span><br><span class="f_CodeExample" style="color: #ffffff;">&nbsp;&nbsp;&nbsp;</span><span class="f_CodeExample" style="color: #008000;">//---&nbsp;Type&nbsp;of&nbsp;entry</span><br><span class="f_CodeExample" style="color: #ffffff;">&nbsp;&nbsp;&nbsp;</span><span class="f_CodeExample" style="color: #0000ff;">enum</span><span class="f_CodeExample" style="color: #ffffff;">&nbsp;</span><span class="f_CodeExample">EnBookItem</span><br><span class="f_CodeExample" style="color: #ffffff;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span><span class="f_CodeExample">{</span><br><span class="f_CodeExample" style="color: #ffffff;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span><span class="f_CodeExample">ItemReset&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=</span><span class="f_Indicators">0</span><span class="f_CodeExample">,</span><span class="f_CodeExample" style="color: #ffffff;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span><span class="f_CodeExample" style="color: #008000;">//&nbsp;Reset&nbsp;an&nbsp;entry&nbsp;in&nbsp;the&nbsp;Depth&nbsp;of&nbsp;Market</span><br><span class="f_CodeExample" style="color: #ffffff;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span><span class="f_CodeExample">ItemSell&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span><span class="f_CodeExample" style="color: #ffffff;">&nbsp;</span><span class="f_CodeExample">=</span><span class="f_Indicators">1</span><span class="f_CodeExample">,</span><span class="f_CodeExample" style="color: #ffffff;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span><span class="f_CodeExample" style="color: #008000;">//&nbsp;Sell&nbsp;request</span><br><span class="f_CodeExample" style="color: #ffffff;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span><span class="f_CodeExample">ItemBuy</span><span class="f_CodeExample" style="color: #ffffff;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span><span class="f_CodeExample">=</span><span class="f_Indicators">2</span><span class="f_CodeExample" style="color: #ffffff;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span><span class="f_CodeExample" style="color: #008000;">//&nbsp;Buy&nbsp;request</span><br><span class="f_CodeExample" style="color: #ffffff;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span><span class="f_CodeExample">ItemSellMarket</span><span class="f_CodeExample" style="color: #ffffff;">&nbsp;</span><span class="f_CodeExample">=</span><span class="f_Indicators">3</span><span class="f_CodeExample">,</span><span class="f_CodeExample" style="color: #ffffff;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span><span class="f_CodeExample" style="color: #008000;">//&nbsp;Market&nbsp;sell&nbsp;request</span><br><span class="f_CodeExample" style="color: #ffffff;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span><span class="f_CodeExample">ItemBuyMarket</span><span class="f_CodeExample" style="color: #ffffff;">&nbsp;&nbsp;</span><span class="f_CodeExample">=</span><span class="f_Indicators">4</span><span class="f_CodeExample" style="color: #ffffff;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span><span class="f_CodeExample" style="color: #008000;">//&nbsp;Market&nbsp;buy&nbsp;request</span><br><span class="f_CodeExample" style="color: #ffffff;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span><span class="f_CodeExample">};</span><br><span class="f_CodeExample" style="color: #ffffff;">&nbsp;&nbsp;&nbsp;</span><span class="f_Reserved">UINT</span><span class="f_CodeExample" style="color: #ffffff;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span><span class="f_Param">type</span><span class="f_CodeExample">;</span><span class="f_CodeExample" style="color: #ffffff;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span><span class="f_CodeExample" style="color: #008000;">//&nbsp;Type&nbsp;of&nbsp;entry</span><br><span class="f_CodeExample" style="color: #ffffff;">&nbsp;&nbsp;&nbsp;</span><span class="f_CodeExample" style="color: #0000ff;">double</span><span class="f_CodeExample" style="color: #ffffff;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span><span class="f_Param">price</span><span class="f_CodeExample">;</span><span class="f_CodeExample" style="color: #ffffff;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span><span class="f_CodeExample" style="color: #008000;">//&nbsp;Deal&nbsp;price</span><br><span class="f_CodeExample" style="color: #ffffff;">&nbsp;&nbsp;&nbsp;</span><span class="f_Reserved">INT64</span><span class="f_CodeExample" style="color: #ffffff;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span><span class="f_Param">volume</span><span class="f_CodeExample">;</span><span class="f_CodeExample" style="color: #ffffff;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span><span class="f_CodeExample" style="color: #008000;">//&nbsp;Deal&nbsp;volume</span><br><span class="f_CodeExample" style="color: #ffffff;">&nbsp;&nbsp;&nbsp;</span><span class="f_Reserved">INT64</span><span class="f_CodeExample" style="color: #ffffff;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span><span class="f_Param">volume_ext</span><span class="f_CodeExample">;</span><span class="f_CodeExample" style="color: #ffffff;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span><span class="f_CodeExample" style="color: #008000;">//&nbsp;deal&nbsp;volume&nbsp;with&nbsp;extended&nbsp;accuracy</span><br><span class="f_CodeExample" style="color: #ffffff;">&nbsp;&nbsp;&nbsp;</span><span class="f_Reserved">UINT</span><span class="f_CodeExample" style="color: #ffffff;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span><span class="f_Param">reserved</span><span class="f_CodeExample">[8];</span><span class="f_CodeExample" style="color: #ffffff;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span><span class="f_CodeExample" style="color: #008000;">//&nbsp;A&nbsp;reserved&nbsp;field</span><br><span class="f_CodeExample" style="color: #ffffff;">&nbsp;&nbsp;</span><span class="f_CodeExample">};</span><br><span class="f_CodeExample" style="color: #0000ff;">#pragma&nbsp;pack(pop)</span></p></td></tr></tbody></table>
+
+MTBookItem is used for filling the[MTBook/MTBookDiff](/en/docs/mt5/api/mtbook) structure.
+
+## Parameters
+
+The structure contains the following parameters:
+
+<table class="table" cellspacing="0" cellpadding="5" border="1"><thead><tr class="table"><th class="table" style="width:121px;"><p class="p_fortable"><span class="f_fortable" style="font-weight: bold;">Field</span></p></th><th class="table" style="width:74px;"><p class="p_fortable"><span class="f_fortable" style="font-weight: bold;">Type</span></p></th><th class="table"><p class="p_fortable"><span class="f_fortable" style="font-weight: bold;">Description</span></p></th></tr></thead><tbody><tr class="table"><td class="table" style="width:121px;"><p class="p_fortable"><span class="f_fortable">type</span></p></td><td class="table" style="width:74px;"><p class="p_fortable"><span class="f_fortable">UINT</span></p></td><td class="table"><p class="p_fortable"><span class="f_fortable">Type of entry that is passed using the <a href="/en/docs/mt5/api/mtbookitem#enbookitem" class="topiclink">EnBookItem</a> enumeration.</span></p></td></tr><tr class="table"><td class="table" style="width:121px;"><p class="p_fortable"><span class="f_fortable">price</span></p></td><td class="table" style="width:74px;"><p class="p_fortable"><span class="f_fortable">double</span></p></td><td class="table"><p class="p_fortable"><span class="f_fortable">Deal price. All the symbol prices delivered into the platform are rounded in accordance with the <a href="/en/docs/mt5/api/config_symbol/imtconsymbol/imtconsymbol_digits" class="topiclink">IMTConSymbol::Digits</a> parameter of the symbol. When broadcasting prices with higher accuracy, different levels can be combined into one rounded level. To avoid collisions, set the precision of the symbols in accordance with the precision of transmitted data.</span></p></td></tr><tr class="table"><td class="table" style="width:121px;"><p class="p_fortable"><span class="f_fortable">volume</span></p></td><td class="table" style="width:74px;"><p class="p_fortable"><span class="f_fortable">INT64</span></p></td><td class="table"><p class="p_fortable"><span class="f_fortable">Deal volume. The volume is recorded in the same form as it is passed by a data provider. A data provider may pass volumes as amounts of contracts (in lots) or as amounts of money. On the trading platform side, this value is interpreted depending on the <a href="/en/docs/mt5/api/config_symbol/imtconsymbol/imtconsymbol_bookvolumemode" class="topiclink">IMTConSymbol::BookVolumeMode</a> property.</span></p><p class="p_fortable"><span class="f_fortable">&nbsp;</span></p><p class="p_fortable"><span class="f_fortable">Unlike all other API methods and fields, in which the volume is specified as a fixed-precision value with 4 digits (where 10000 is 1 lot), the volume in this field is specified as is, with the precision of 0 digits. For example, for all financial instruments except Forex, the value of 1 means 1 lot. For operations with <a href="/en/docs/mt5/api/features#volume" class="topiclink">extended-precision volumes</a>, use the 'volume_ext' field.</span></p><ul><li class="p_fortable"><span class="f_fortable">The 'volume_ext' value has a higher priority than 'volume'. The server will use this value if specified.</span></li><li class="p_fortable"><span class="f_fortable">When returning volume values, the server fills both fields: with standard and extended precision.</span></li></ul></td></tr><tr class="table"><td class="table" style="width:121px;"><p class="p_fortable"><span class="f_fortable">volume_ext</span></p></td><td class="table" style="width:74px;"><p class="p_fortable"><span class="f_fortable">INT64</span></p></td><td class="table"><p class="p_fortable"><span class="f_fortable">Deal volume with <a href="/en/docs/mt5/api/features#volume" class="topiclink">extended precision</a>. It is similar to the 'volume' field, but the value is passed with the fixed number of decimal places (8).</span></p><ul><li class="p_fortable"><span class="f_fortable">The 'volume_ext' value has a higher priority than 'volume'. The server will use this value if specified.</span></li><li class="p_fortable"><span class="f_fortable">When returning volume values, the server fills both fields: with standard and extended precision.</span></li></ul></td></tr><tr class="table"><td class="table" style="width:121px;"><p class="p_fortable"><span class="f_fortable">reserved</span></p></td><td class="table" style="width:74px;"><p class="p_fortable"><span class="f_fortable">UINT</span></p></td><td class="table"><p class="p_fortable"><span class="f_fortable">A reserved field for future use.</span></p></td></tr></tbody></table>
+
+## Enumerations
+
+The structure contains one enumeration:
+
+### EnBookItem [#](mtbookitem#enbookitem)
+
+Types of entries of the Depth of Market are described in EnBookItem.
+
+<table class="table" cellspacing="0" cellpadding="5" border="1"><thead><tr class="table"><th class="table" style="width:121px;"><p class="p_fortable"><span class="f_fortable" style="font-weight: bold;">ID</span></p></th><th class="table" style="width:75px;"><p class="p_fortable"><span class="f_fortable" style="font-weight: bold;">Value</span></p></th><th class="table"><p class="p_fortable"><span class="f_fortable" style="font-weight: bold;">Description</span></p></th></tr></thead><tbody><tr class="table"><td class="table" style="width:121px;"><p class="p_fortable"><span class="f_fortable">ItemReset</span></p></td><td class="table" style="width:75px;"><p class="p_fortable"><span class="f_fortable">0</span></p></td><td class="table"><p class="p_fortable"><span class="f_fortable">Reset an entry of the Depth of Market. This type is not used in Manager API.</span></p></td></tr><tr class="table"><td class="table" style="width:121px;"><p class="p_fortable"><span class="f_fortable">ItemSell</span></p></td><td class="table" style="width:75px;"><p class="p_fortable"><span class="f_fortable">1</span></p></td><td class="table"><p class="p_fortable"><span class="f_fortable">Sell request.</span></p></td></tr><tr class="table"><td class="table" style="width:121px;"><p class="p_fortable"><span class="f_fortable">ItemBuy</span></p></td><td class="table" style="width:75px;"><p class="p_fortable"><span class="f_fortable">2</span></p></td><td class="table"><p class="p_fortable"><span class="f_fortable">Buy request.</span></p></td></tr><tr class="table"><td class="table" style="width:121px;"><p class="p_fortable"><span class="f_fortable">ItemMarketSell</span></p></td><td class="table" style="width:75px;"><p class="p_fortable"><span class="f_fortable">3</span></p></td><td class="table"><p class="p_fortable"><span class="f_fortable">Used for displaying aggregated market sell requests.</span></p></td></tr><tr class="table"><td class="table" style="width:121px;"><p class="p_fortable"><span class="f_fortable">ItemMarketBuy</span></p></td><td class="table" style="width:75px;"><p class="p_fortable"><span class="f_fortable">4</span></p></td><td class="table"><p class="p_fortable"><span class="f_fortable">Used for displaying aggregated market buy requests.</span></p></td></tr></tbody></table>
+
+[MTChartBar](/en/docs/mt5/api/mtchartbar)
+
+[MTBook/MTBookDiff](/en/docs/mt5/api/mtbook)

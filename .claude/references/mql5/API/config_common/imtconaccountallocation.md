@@ -1,0 +1,107 @@
+# IMTConAccountAllocation
+
+> Source: https://support.metaquotes.net/en/docs/mt5/api/config_common/imtconaccountallocation
+
+-   [MetaTrader 5](/en/docs/mt5)
+    -   [Platform](/en/docs/mt5/platform)
+    -   [Administrator](/en/docs/mt5/platform/administrator)
+    -   [Manager](/en/docs/mt5/manager)
+    -   [Client terminal](/en/docs/mt5/client)
+    -   [MetaEditor](/en/docs/mt5/metaeditor)
+    -   [iPhone/iPad](/en/docs/mt5/iphone)
+    -   [Android](/en/docs/mt5/android)
+    -   [WebTerminal](/en/docs/mt5/platform/components/web_terminal)
+    -   [API](/en/docs/mt5/api)
+        -   [Getting Started](/en/docs/mt5/api/getting_started)
+        -   [Server API](/en/docs/mt5/api/serverapi)
+        -   [Manager API](/en/docs/mt5/api/managerapi)
+        -   [Gateway API](/en/docs/mt5/api/gatewayapi)
+        -   [Report API](/en/docs/mt5/api/reportapi)
+        -   [Web API](/en/docs/mt5/api/webapi)
+        -   [SQL Export](/en/docs/mt5/api/sql_export)
+        -   [Internal Data Types](/en/docs/mt5/api/reference_types)
+        -   [Journal Constants](/en/docs/mt5/api/journal)
+        -   [Return Codes](/en/docs/mt5/api/reference_retcodes)
+        -   [Structures](/en/docs/mt5/api/reference_structures)
+        -   [Configuration Interfaces](/en/docs/mt5/api/reference_configurations)
+            -   [Common](/en/docs/mt5/api/config_common)
+                -   [IMTConCommon](/en/docs/mt5/api/config_common/imtconcommon)
+                -   [IMTConAccountAllocation](/en/docs/mt5/api/config_common/imtconaccountallocation)
+                    -   [Enumerations](/en/docs/mt5/api/config_common/imtconaccountallocation/imtconaccountallocation_enum)
+                    -   [Release](/en/docs/mt5/api/config_common/imtconaccountallocation/imtconaccountallocation_release)
+                    -   [Assign](/en/docs/mt5/api/config_common/imtconaccountallocation/imtconaccountallocation_assign)
+                    -   [Clear](/en/docs/mt5/api/config_common/imtconaccountallocation/imtconaccountallocation_clear)
+                    -   [Group](/en/docs/mt5/api/config_common/imtconaccountallocation/imtconaccountallocation_group)
+                    -   [Description](/en/docs/mt5/api/config_common/imtconaccountallocation/imtconaccountallocation_description)
+                    -   [Flags](/en/docs/mt5/api/config_common/imtconaccountallocation/imtconaccountallocation_flags)
+                    -   [Leverages](/en/docs/mt5/api/config_common/imtconaccountallocation/imtconaccountallocation_leverages)
+                    -   [Countries](/en/docs/mt5/api/config_common/imtconaccountallocation/imtconaccountallocation_countries)
+                    -   [ConfirmationEmail](/en/docs/mt5/api/config_common/imtconaccountallocation/imtconaccountallocation_confirmationemail)
+                    -   [AccountAgreementAdd](/en/docs/mt5/api/config_common/imtconaccountallocation/imtconaccountallocation_accountagreementadd)
+                    -   [AccountAgreementUpdate](/en/docs/mt5/api/config_common/imtconaccountallocation/imtconaccountallocation_accountagreementupdate)
+                    -   [AccountAgreementDelete](/en/docs/mt5/api/config_common/imtconaccountallocation/imtconaccountallocation_accountagreementdelete)
+                    -   [AccountAgreementClear](/en/docs/mt5/api/config_common/imtconaccountallocation/imtconaccountallocation_accountagreementclear)
+                    -   [AccountAgreementShift](/en/docs/mt5/api/config_common/imtconaccountallocation/imtconaccountallocation_accountagreementshift)
+                    -   [AccountAgreementTotal](/en/docs/mt5/api/config_common/imtconaccountallocation/imtconaccountallocation_accountagreementtotal)
+                    -   [AccountAgreementNext](/en/docs/mt5/api/config_common/imtconaccountallocation/imtconaccountallocation_accountagreementnext)
+                -   [IMTConAccountAgreement](/en/docs/mt5/api/config_common/imtconaccountagreement)
+                -   [IMTConCommonSink](/en/docs/mt5/api/config_common/imtconcommonsink)
+            -   [Network](/en/docs/mt5/api/config_network)
+            -   [Plugins](/en/docs/mt5/api/config_plugins)
+            -   [Data Feeds](/en/docs/mt5/api/config_datafeeds)
+            -   [Time](/en/docs/mt5/api/config_time)
+            -   [Holidays](/en/docs/mt5/api/config_holiday)
+            -   [Firewall](/en/docs/mt5/api/config_firewall)
+            -   [Symbols](/en/docs/mt5/api/config_symbol)
+            -   [Spreads](/en/docs/mt5/api/config_spread)
+            -   [Groups](/en/docs/mt5/api/config_group)
+            -   [Floating Margin](/en/docs/mt5/api/config_leverage)
+            -   [Managers](/en/docs/mt5/api/config_manager)
+            -   [History Synchronization](/en/docs/mt5/api/config_historysync)
+            -   [Gateways](/en/docs/mt5/api/config_gateway)
+            -   [Routing](/en/docs/mt5/api/config_route)
+            -   [Reports](/en/docs/mt5/api/config_report)
+            -   [Mail Servers](/en/docs/mt5/api/config_email)
+            -   [Messengers](/en/docs/mt5/api/config_messenger)
+            -   [Automations](/en/docs/mt5/api/config_automation)
+            -   [VPS](/en/docs/mt5/api/config_vps)
+            -   [KYC](/en/docs/mt5/api/config_kyc)
+            -   [Subscriptions](/en/docs/mt5/api/config_subscription)
+            -   [Funds and ETF](/en/docs/mt5/api/config_funds)
+            -   [Additional Parameters](/en/docs/mt5/api/config_param)
+        -   [Database Interfaces](/en/docs/mt5/api/reference_bases)
+        -   [Tools](/en/docs/mt5/api/reference_tools)
+        -   [Development Features](/en/docs/mt5/api/features)
+        -   [List of Events](/en/docs/mt5/api/event_list)
+        -   [List of Hooks](/en/docs/mt5/api/hook_list)
+-   [MetaTrader 4](/en/docs/mt4)
+    -   [Administrator](/en/docs/mt4/administrator)
+    -   [Manager](/en/docs/mt4/manager)
+    -   [Client terminal](/en/docs/mt4/terminal)
+    -   [MetaEditor](/en/docs/mt4/metaeditor)
+    -   [WebTerminal](/en/docs/mt4/administrator/web_terminal)
+    -   [MultiTerminal](/en/docs/mt4/multiterminal)
+    -   [API](/en/docs/mt4/api)
+-   [Finteza](/en/docs/finteza)
+    -   [CMS Plugins](/en/docs/finteza/plugins)
+    -   [Finteza JavaScript Client](/en/docs/finteza/javascript-client)
+    -   [Finteza SDK](/en/docs/finteza/sdk)
+-   [MQL5.community](/en/docs/community)
+
+window.fz('show', 'fotcgrjxafakglznxzxkinbtytrjklzamk');
+
+[MetaTrader 5](/en/docs/mt5)[API](/en/docs/mt5/api)[Configuration Interfaces](/en/docs/mt5/api/reference_configurations)[Common](/en/docs/mt5/api/config_common)IMTConAccountAllocation
+
+# IMTConAccountAllocation
+
+The IMTConAccountAllocation class contains methods for working with [account allocation settings](https://support.metaquotes.net/ru/docs/mt5/platform/administration/admin_accounts/account_allocation_groups). Each IMTConAccountAllocation object describes settings for a particular account group.
+
+<table class="table" cellspacing="0" cellpadding="5" border="1"><thead><tr class="table"><th class="table" style="width:160px;"><p class="p_fortable"><span class="f_fortable" style="font-weight: bold;">Method</span></p></th><th class="table"><p class="p_fortable"><span class="f_fortable" style="font-weight: bold;">Purpose</span></p></th></tr></thead><tbody><tr class="table"><td class="table" style="width:160px;"><p class="p_fortable"><span class="f_fortable"><a href="/en/docs/mt5/api/config_common/imtconaccountallocation/imtconaccountallocation_release" class="topiclink">Release</a></span></p></td><td class="table"><p class="p_fortable"><span class="f_fortable">Delete the current object.</span></p></td></tr><tr class="table"><td class="table" style="width:160px;"><p class="p_fortable"><span class="f_fortable"><a href="/en/docs/mt5/api/config_common/imtconaccountallocation/imtconaccountallocation_assign" class="topiclink">Assign</a></span></p></td><td class="table"><p class="p_fortable"><span class="f_fortable">Assign the passed object to the current one.</span></p></td></tr><tr class="table"><td class="table" style="width:160px;"><p class="p_fortable"><span class="f_fortable"><a href="/en/docs/mt5/api/config_common/imtconaccountallocation/imtconaccountallocation_clear" class="topiclink">Clear</a></span></p></td><td class="table"><p class="p_fortable"><span class="f_fortable">Clear an object.</span></p></td></tr><tr class="table"><td class="table" style="width:160px;"><p class="p_fortable"><span class="f_fortable"><a href="/en/docs/mt5/api/config_common/imtconaccountallocation/imtconaccountallocation_group" class="topiclink">Group</a></span></p></td><td class="table"><p class="p_fortable"><span class="f_fortable">Get and set the group in which the accounts requested through terminals will be opened.</span></p></td></tr><tr class="table"><td class="table" style="width:160px;"><p class="p_fortable"><span class="f_fortable"><a href="/en/docs/mt5/api/config_common/imtconaccountallocation/imtconaccountallocation_description" class="topiclink">Description</a></span></p></td><td class="table"><p class="p_fortable"><span class="f_fortable">Get and set the group description displayed in the "Account type" field in client terminals.</span></p></td></tr><tr class="table"><td class="table" style="width:160px;"><p class="p_fortable"><span class="f_fortable"><a href="/en/docs/mt5/api/config_common/imtconaccountallocation/imtconaccountallocation_flags" class="topiclink">Flags</a></span></p></td><td class="table"><p class="p_fortable"><span class="f_fortable">Get and set additional account allocation settings for the group.</span></p></td></tr><tr class="table"><td class="table" style="width:160px;"><p class="p_fortable"><span class="f_fortable"><a href="/en/docs/mt5/api/config_common/imtconaccountallocation/imtconaccountallocation_leverages" class="topiclink">Leverages</a></span></p></td><td class="table"><p class="p_fortable"><span class="f_fortable">Get and set the list of available leverage options which can be selected when opening an account in this group.</span></p></td></tr><tr class="table"><td class="table" style="width:160px;"><p class="p_fortable"><span class="f_fortable"><a href="/en/docs/mt5/api/config_common/imtconaccountallocation/imtconaccountallocation_countries" class="topiclink">Countries</a></span></p></td><td class="table"><p class="p_fortable"><span class="f_fortable">Get and set the list of countries in which it will be possible to open an account in this group.</span></p></td></tr><tr class="table"><td class="table" style="width:160px;"><p class="p_fortable"><span class="f_fortable"><a href="/en/docs/mt5/api/config_common/imtconaccountallocation/imtconaccountallocation_confirmationemail" class="topiclink">ConfirmationEmail</a></span></p></td><td class="table"><p class="p_fortable"><span class="f_fortable">Get and set the mail server which will be used for email confirmations when opening accounts in this group.</span></p></td></tr><tr class="table"><td class="table" style="width:160px;"><p class="p_fortable"><span class="f_fortable"><a href="/en/docs/mt5/api/config_common/imtconaccountallocation/imtconaccountallocation_accountagreementadd" class="topiclink">AccountAgreementAdd</a></span></p></td><td class="table"><p class="p_fortable"><span class="f_fortable">Add an agreement to the account allocation configuration.</span></p></td></tr><tr class="table"><td class="table" style="width:160px;"><p class="p_fortable"><span class="f_fortable"><a href="/en/docs/mt5/api/config_common/imtconaccountallocation/imtconaccountallocation_accountagreementupdate" class="topiclink">AccountAgreementUpdate</a></span></p></td><td class="table"><p class="p_fortable"><span class="f_fortable">Edit an agreement in the account allocation configuration.</span></p></td></tr><tr class="table"><td class="table" style="width:160px;"><p class="p_fortable"><span class="f_fortable"><a href="/en/docs/mt5/api/config_common/imtconaccountallocation/imtconaccountallocation_accountagreementdelete" class="topiclink">AccountAgreementDelete</a></span></p></td><td class="table"><p class="p_fortable"><span class="f_fortable">Remove an agreement from the account allocation configuration.</span></p></td></tr><tr class="table"><td class="table" style="width:160px;"><p class="p_fortable"><span class="f_fortable"><a href="/en/docs/mt5/api/config_common/imtconaccountallocation/imtconaccountallocation_accountagreementclear" class="topiclink">AccountAgreementClear</a></span></p></td><td class="table"><p class="p_fortable"><span class="f_fortable">Clear the list of agreements in the account allocation configuration.</span></p></td></tr><tr class="table"><td class="table" style="width:160px;"><p class="p_fortable"><span class="f_fortable"><a href="/en/docs/mt5/api/config_common/imtconaccountallocation/imtconaccountallocation_accountagreementshift" class="topiclink">AccountAgreementShift</a></span></p></td><td class="table"><p class="p_fortable"><span class="f_fortable">Move an agreement in the account allocation configuration.</span></p></td></tr><tr class="table"><td class="table" style="width:160px;"><p class="p_fortable"><span class="f_fortable"><a href="/en/docs/mt5/api/config_common/imtconaccountallocation/imtconaccountallocation_accountagreementtotal" class="topiclink">AccountAgreementTotal</a></span></p></td><td class="table"><p class="p_fortable"><span class="f_fortable">Get the number of agreements in the account allocation configuration.</span></p></td></tr><tr class="table"><td class="table" style="width:160px;"><p class="p_fortable"><span class="f_fortable"><a href="/en/docs/mt5/api/config_common/imtconaccountallocation/imtconaccountallocation_accountagreementnext" class="topiclink">AccountAgreementNext</a></span></p></td><td class="table"><p class="p_fortable"><span class="f_fortable">Get agreement by index.</span></p></td></tr></tbody></table>
+
+The IMTConAccountAgreement class contains the following enumerations:
+
+<table class="table" cellspacing="0" cellpadding="5" border="1"><thead><tr class="table"><th class="table" style="width:160px;"><p class="p_fortable"><span class="f_fortable" style="font-weight: bold;">Enumeration</span></p></th><th class="table"><p class="p_fortable"><span class="f_fortable" style="font-weight: bold;">Purpose</span></p></th></tr></thead><tbody><tr class="table"><td class="table" style="width:160px;"><p class="p_fortable"><span class="f_fortable"><a href="/en/docs/mt5/api/config_common/imtconaccountallocation/imtconaccountallocation_enum#enflags" class="topiclink">EnFlags</a></span></p></td><td class="table"><p class="p_fortable"><span class="f_fortable">Additional agreement settings.</span></p></td></tr></tbody></table>
+
+[AccountAllocationNext](/en/docs/mt5/api/config_common/imtconcommon/imtconcommon_accountallocationnext)
+
+[Enumerations](/en/docs/mt5/api/config_common/imtconaccountallocation/imtconaccountallocation_enum)

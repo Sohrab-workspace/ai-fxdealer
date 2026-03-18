@@ -1,0 +1,80 @@
+# Welcome to algorithmic trading!
+
+> Source: https://support.metaquotes.net/en/docs/mt5/metaeditor
+
+-   [MetaTrader 5](/en/docs/mt5)
+    -   [Platform](/en/docs/mt5/platform)
+    -   [Administrator](/en/docs/mt5/platform/administrator)
+    -   [Manager](/en/docs/mt5/manager)
+    -   [Client terminal](/en/docs/mt5/client)
+    -   [MetaEditor](/en/docs/mt5/metaeditor)
+        -   [Launch](/en/docs/mt5/metaeditor/open)
+        -   [Settings](/en/docs/mt5/metaeditor/settings)
+        -   [Integration with other IDEs](/en/docs/mt5/metaeditor/integration_ide)
+        -   [Main menu](/en/docs/mt5/metaeditor/main_menu)
+        -   [Toolbars](/en/docs/mt5/metaeditor/toolbar)
+        -   [Workspace](/en/docs/mt5/metaeditor/workspace)
+        -   [Projects and MQL5 Storage](/en/docs/mt5/metaeditor/mql5storage)
+        -   [MQL4/MQL5 Wizard](/en/docs/mt5/metaeditor/mql5_wizard)
+        -   [Developing programs](/en/docs/mt5/metaeditor/development)
+        -   [Working with SQL data bases](/en/docs/mt5/metaeditor/database)
+        -   [Working with machine learning models](/en/docs/mt5/metaeditor/machine_learning)
+        -   [Example of developing a program](/en/docs/mt5/metaeditor/project_example)
+        -   [MetaEditor environment folders](/en/docs/mt5/metaeditor/structure)
+        -   [MQL5.community: Community of Traders](/en/docs/mt5/metaeditor/mql5community)
+        -   [Built-in help](/en/docs/mt5/metaeditor/mql5_help)
+        -   [Articles on the development of trading applications](/en/docs/mt5/metaeditor/articles)
+        -   [Trading platform video guides](/en/docs/mt5/metaeditor/video_guides)
+    -   [iPhone/iPad](/en/docs/mt5/iphone)
+    -   [Android](/en/docs/mt5/android)
+    -   [WebTerminal](/en/docs/mt5/platform/components/web_terminal)
+    -   [API](/en/docs/mt5/api)
+-   [MetaTrader 4](/en/docs/mt4)
+    -   [Administrator](/en/docs/mt4/administrator)
+    -   [Manager](/en/docs/mt4/manager)
+    -   [Client terminal](/en/docs/mt4/terminal)
+    -   [MetaEditor](/en/docs/mt4/metaeditor)
+    -   [WebTerminal](/en/docs/mt4/administrator/web_terminal)
+    -   [MultiTerminal](/en/docs/mt4/multiterminal)
+    -   [API](/en/docs/mt4/api)
+-   [Finteza](/en/docs/finteza)
+    -   [CMS Plugins](/en/docs/finteza/plugins)
+    -   [Finteza JavaScript Client](/en/docs/finteza/javascript-client)
+    -   [Finteza SDK](/en/docs/finteza/sdk)
+-   [MQL5.community](/en/docs/community)
+
+window.fz('show', 'fotcgrjxafakglznxzxkinbtytrjklzamk');
+
+[MetaTrader 5](/en/docs/mt5)MetaEditor
+
+# Welcome to algorithmic trading!
+
+MetaEditor is a modern trading strategy development environment integrated with MetaTrader platform. It allows creating programs for algorithmic trading on MQL4 and MQL5 languages: trading robots, technical indicators, scripts, graphical control panels and much more.
+
+### How to start creating trading robots
+
+We have released two free books on MQL5 programming to help you master the creation of trading robots and applications for algorithmic trading.
+
+These books offer a systematic and structured presentation of the material to make the learning process significantly easier. Detailed code examples, which explain the step-by-step creation of trading robots and applications, allow for a deeper understanding of algorithmic trading nuances. The books include numerous practical exercises to help reinforce the acquired knowledge and develop programming skills in real trading environments.
+
+["MQL5 Programming for Traders](https://www.mql5.com/en/book "MQL5 Tutorial")" is the most complete and detailed tutorial on MQL5, suitable for programmers of all levels. Beginners will learn the basics: the book introduces development tools and basic programming concepts. Based on this material, you will create, compile and run your first application in the MetaTrader 5 trading platform. Users with experience in other programming languages can immediately proceed to the application part: creating trading robots and analytical applications in MQL5.
+
+["Neural Networks for Algorithmic Trading with MQL5](https://www.mql5.com/en/neurobook "Book on Neural Networks with MQL5, OpenCL and Python")" is a guide to using machine learning methods in trading robots for the MetaTrader 5 platform. You will be progressively introduced to the fundamentals of neural networks and their application in algorithmic trading. As you advance, you will build and train your own AI solution, gradually adding new features. In addition to learning MQL5, you will gain Python and OpenCL programming skills and explore integrated matrix and vector methods, which enable the solution of complex mathematical problems with concise and efficient code.
+
+### Explore articles on developing trading strategies
+
+[MQL5 Articles](https://www.mql5.com/en/articles "Articles on algorithmic/automated trading in MetaTrader and MQL4/MQL5 programming") are an excellent resource for exploring the full potential of the language, covering a wide range of practical algorithmic trading tasks. For easy navigation, all articles are categorized into sections such as [Example](https://www.mql5.com/en/articles/examples), [Expert Advisors](https://www.mql5.com/en/articles/expert_advisors), [Machine Learning](https://www.mql5.com/en/articles/machine_learning) and more. Every month, dozens of new articles are published on the [MQL5 Algotrading community](https://www.mql5.com/) website, written by traders for other traders. Read and discuss these articles to master modern algorithmic trading. For beginners, we have compiled a list of [16 recommended articles](/en/docs/mt5/metaeditor/articles) for a quick immersion into MQL5.
+
+Programming is not only an opportunity to facilitate and automate your trading operations or develop a robot that tirelessly trades for you. This is also an opportunity to earn money by developing software for many other traders. The trading platform already provides the entire infrastructure for that.
+
+<table class="help" cellspacing="0" cellpadding="10" border="0" style="width:100%; border:none; border-spacing:0;"><tbody><tr><td style="vertical-align:top; width:48px; padding:10px; border:none"><p class="p_fortable"><img class="help" alt="Market" title="Market" width="48" height="48" src="/en/docs/mt5/metaeditor/img/market_icon.png"></p></td><td style="vertical-align:top; padding:10px; border:none"><p class="p_fortable"><span class="f_fortable">You can sell your applications in the <a href="https://www.mql5.com/en/market" target="_blank" class="weblink">Market</a>. It is the largest store of applications for trading platforms. It already features more than 10 000 robots and indicators. By sending your product to the Market, you access a huge audience, since the service is built into the popular MQL5.community website and the trading platform. The service provides the entire necessary infrastructure: processing of payments, delivery of programs and protection of sellers and buyers.</span></p></td></tr><tr><td style="vertical-align:top; width:48px; padding:10px; border:none"><p class="p_fortable"><img class="help" alt="Freelance" title="Freelance" width="48" height="48" src="/en/docs/mt5/metaeditor/img/freelance_icon.png"></p></td><td style="vertical-align:top; padding:10px; border:none"><p class="p_fortable"><span class="f_fortable">You can execute orders for creating trading applications in the <a href="https://www.mql5.com/en/job" target="_blank" class="weblink">Freelance</a> service. The service features a transparent and secure operation system. Orders are performed in steps, starting with a discussion of preliminary specifications and finishing with sending the final work. The agreed order cost is frozen on the customer's account for the order development time, thus payment for work is guaranteed.</span></p></td></tr><tr><td style="vertical-align:top; width:48px; padding:10px; border:none"><p class="p_fortable"><img class="help" alt="Library" title="Library" width="48" height="45" src="/en/docs/mt5/metaeditor/img/codebase_icon.png"></p></td><td style="vertical-align:top; padding:10px; border:none"><p class="p_fortable"><span class="f_fortable">You can contribute to the development of the algorithmic trading publishing your works in the <a href="https://www.mql5.com/en/code" target="_blank" class="weblink">source code library</a>. Your programs will be available for download directly from the trading platform. If you are new to programming, then the library provides you with many useful learning materials: from scripts that perform simple trading tasks up to complex trading robots and technical indicators.</span></p></td></tr></tbody></table>
+
+Start learning the algorithmic trading, while MetaEditor provides you with all necessary instruments.
+
+![MetaEditor — environment for trading robots and indicators development](/en/docs/mt5/metaeditor/img/metaeditor.png "MetaEditor — environment for trading robots and indicators development")
+
+<table class="help" cellspacing="0" cellpadding="0" border="0" style="width:100%; border:none; border-spacing:0;"><tbody><tr><td style="vertical-align:top; width:50%; padding:0; border:none"><p class="p_table_H2"><span class="f_table_H2">Convenient code editing</span></p><p class="p_table_text"><span class="f_table_text">MetaEditor provides convenient features for writing a source code of MQL4/MQL5 applications.</span></p><p class="p_table_text"><span class="f_table_text">All language elements are highlighted, while colors can be customized. When writing code, the editor automatically offers suitable options for function, constant and variable names. This greatly facilitates and speeds up the code writing.</span></p><p class="p_table_text"><span class="f_table_text">The editor allows you to quickly see the function signature, supports snippets, bookmarks, quick insertion of resources and easy code navigation.</span></p><p class="p_table_learnmore"><span class="f_table_learnmore"><a href="/en/docs/mt5/metaeditor/intelligent_management" class="topiclink">Find out more &gt;&gt;</a></span></p></td><td style="vertical-align:top; width:500px; padding:0; border:none"><p class="p_table_image"><img class="help" alt="Convenient code editing" title="Convenient code editing" width="500" height="323" src="/en/docs/mt5/metaeditor/img/main_code.png"></p></td></tr><tr><td style="vertical-align:top; width:50%; padding:0; border:none"><p class="p_table_image"><img class="help" alt="MQL Wizard for quick program development" title="MQL Wizard for quick program development" width="500" height="439" src="/en/docs/mt5/metaeditor/img/main_wizard.png"></p></td><td style="vertical-align:top; width:500px; padding:0; border:none"><p class="p_table_H2"><span class="f_table_H2">MQL Wizard</span></p><p class="p_table_text"><span class="f_table_text">MetaEditor allows you to quickly generate projects using template, as well as create ready-made trading robots with the help of the MQL Wizard.</span></p><p class="p_table_text"><span class="f_table_text">The MQL wizard eliminates routine operations while creating new projects. Instead of specifying the general properties of an application in the code manually and describing the event handlers, you can quickly set them through the MQL Wizard. It automatically writes everything you need to the source code and saves the file in the correct directory according to a program type.</span></p><p class="p_table_text"><span class="f_table_text">MQL Wizard allows <a href="/en/docs/mt5/metaeditor/wizard_ea_generate" class="topiclink">generation of ready-made trading robots</a>. Simply select trading signals you need, as well as stop levels tracking and money management mode. Compile the resulting program and proceed to test it in the trading platform's strategy tester.</span></p><p class="p_table_learnmore"><span class="f_table_learnmore"><a href="/en/docs/mt5/metaeditor/mql5_wizard" class="topiclink">Find out more &gt;&gt;</a></span></p></td></tr><tr><td style="vertical-align:top; width:50%; padding:0; border:none"><p class="p_table_H2"><span class="f_table_H2">Debugging programs</span></p><p class="p_table_text"><span class="f_table_text">MetaEditor provides opportunities for a thorough check of all program algorithms before launching it to real work.</span></p><p class="p_table_text"><span class="f_table_text">During the debugging, you can move through consecutive steps of each program function execution and see the calculation results of all expressions and the call stack.</span></p><p class="p_table_text"><span class="f_table_text">You can launch debugging on a price chart and in the strategy tester. This allows you not to wait for certain market conditions to check a trading algorithm.</span></p><p class="p_table_learnmore"><span class="f_table_learnmore"><a href="/en/docs/mt5/metaeditor/debug" class="topiclink">Find out more &gt;&gt;</a></span></p></td><td style="vertical-align:top; width:500px; padding:0; border:none"><p class="p_table_image"><img class="help" alt="Debugging in real time and in the strategy tester" title="Debugging in real time and in the strategy tester" width="500" height="358" src="/en/docs/mt5/metaeditor/img/main_debug.png"></p></td></tr><tr><td style="vertical-align:top; width:50%; padding:0; border:none"><p class="p_table_image"><img class="help" alt="Code profiling" title="Code profiling" width="500" height="331" src="/en/docs/mt5/metaeditor/img/main_profiler.png"></p></td><td style="vertical-align:top; width:500px; padding:0; border:none"><p class="p_table_H2"><span class="f_table_H2">Code profiling</span></p><p class="p_table_text"><span class="f_table_text">The speed of work is one of the most important parameters in the algorithmic trading. The MetaEditor's profiling function allows checking the program's source code performance, as well as detect and optimize the slowest functions.</span></p><p class="p_table_text"><span class="f_table_text">The program runs on a price chart or in a strategy tester. After that, MetaEditor reports on the execution time and number of calls of each function in the source code.</span></p><p class="p_table_text"><span class="f_table_text">You can see the program execution speed not only by functions, but also by separate strings.</span></p><p class="p_table_learnmore"><span class="f_table_learnmore"><a href="/en/docs/mt5/metaeditor/profiling" class="topiclink">Find out more &gt;&gt;</a></span></p></td></tr><tr><td style="vertical-align:top; width:50%; padding:0; border:none"><p class="p_table_H2"><span class="f_table_H2">MQL5 Storage and shared projects</span></p><p class="p_table_text"><span class="f_table_text">MetaEditor features the online source code storage <a href="/en/docs/mt5/metaeditor/mql5storage" class="topiclink">MQL5 Storage</a> supporting the version control.</span></p><p class="p_table_text"><span class="f_table_text">The storage allows you to access your codes from any PC using an <a href="/en/docs/mt5/metaeditor/mql5community" class="topiclink">MQL5.community</a> account. If you save files there, they will not be lost even if your hard disk fails.</span></p><p class="p_table_text"><span class="f_table_text">MQL5 Storage allows you to collaborate on the development of projects with any remote users. Just create a shared project and distribute the rights to your team members. They will immediately receive it on their PCs and get to work. MQL5 Storage version control allows tracking all changes.</span></p><p class="p_table_learnmore"><span class="f_table_learnmore"><a href="/en/docs/mt5/metaeditor/mql5storage" class="topiclink">Find out more &gt;&gt;</a></span></p></td><td style="vertical-align:top; width:500px; padding:0; border:none"><p class="p_table_image"><img class="help" alt="MQL5 Storage and shared projects" title="MQL5 Storage and shared projects" width="500" height="343" src="/en/docs/mt5/metaeditor/img/main_project.png"></p></td></tr></tbody></table>
+
+[MQL5 Algotrading community](/en/docs/mt5/client/mql5community)
+
+[Launch](/en/docs/mt5/metaeditor/open)
