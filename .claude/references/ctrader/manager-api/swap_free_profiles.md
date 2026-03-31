@@ -116,4 +116,4 @@ Swap-free accounts pay a storage charge instead of overnight swap.
 
 ---
 
-*Captured: 2026-03-30 16:42 UTC — OpoFinance live environment*
+*Captured: 2026-03-31 07:40 UTC — OpoFinance live environment*

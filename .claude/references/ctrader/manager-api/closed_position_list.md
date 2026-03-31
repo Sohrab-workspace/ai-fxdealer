@@ -1,6 +1,6 @@
 # Closed Position List
 
-**Category:** positions &nbsp;|&nbsp; **Status:** ⚠️ Error captured
+**Category:** positions &nbsp;|&nbsp; **Status:** ✅ Live
 
 ## Description
 
@@ -63,8 +63,104 @@ c.close()
 
 ### Live Response Sample
 
-```
-ERROR: ERROR_RES code=0 desc=NOT_ENOUGH_RIGHTS
+```json
+{
+  "2": [
+    {
+      "1": 767310,
+      "3": {
+        "1": 41,
+        "2": 0,
+        "3": 1,
+        "4": 6307,
+        "7": 1774941249039,
+        "8": 1774941729779,
+        "13": "Strategy Provider: Saturn",
+        "14": "cTrader Copy",
+        "15": "Oz",
+        "16": 10000,
+        "17": 0,
+        "20": 0
+      },
+      "4": 2,
+      "5": 0,
+      "6": {
+        "0": [
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "10": 1774941729779,
+      "11": 2,
+      "12": 1,
+      "13": 0,
+      "14": {
+        "0": [
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "16": 0,
+      "17": 0,
+      "18": 0,
+      "20": 0,
+      "21": 0,
+      "27": 1,
+      "30": 2
+    },
+    {
+      "1": 767288,
+      "3": {
+        "1": 41,
+        "2": 0,
+        "3": 1,
+        "4": 6279,
+        "7": 1774939921761,
+        "8": 1774941569779,
+        "13": "Strategy Provider: Welfare",
+        "14": "cTrader Copy",
+        "15": "Oz",
+        "16": 10000,
+        "17": 0,
+        "20": 0
+      },
+      "4": 2,
+      "5": 0,
+      "6": {
+        "0": [
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "10": 1774941569779,
+      "11": 2,
+      "12": 1,
+      "13": 0,
+      "14": {
+        "0": [
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "16": 0,
+      "17": 0,
+      "18": 0,
+      "20": 0,
+      "21": 0,
+      "27": 1,
+      "30": 2
+    }
+  ],
+  "3": 0
+}
 ```
 
 ---
@@ -108,4 +204,4 @@ Timestamps refer to position close time. For P&L details see closePositionDetail
 
 ---
 
-*Captured: 2026-03-30 16:42 UTC — OpoFinance live environment*
+*Captured: 2026-03-31 07:40 UTC — OpoFinance live environment*

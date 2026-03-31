@@ -118,4 +118,4 @@ Country IDs are used in ProtoTrader.countryId.
 
 ---
 
-*Captured: 2026-03-30 16:42 UTC — OpoFinance live environment*
+*Captured: 2026-03-31 07:40 UTC — OpoFinance live environment*

@@ -1,6 +1,6 @@
 # Order Manager List (All Orders)
 
-**Category:** orders &nbsp;|&nbsp; **Status:** ⚠️ Error captured
+**Category:** orders &nbsp;|&nbsp; **Status:** ✅ Live
 
 ## Description
 
@@ -63,8 +63,100 @@ c.close()
 
 ### Live Response Sample
 
-```
-ERROR: ERROR_RES code=0 desc=NOT_ENOUGH_RIGHTS
+```json
+{
+  "2": [
+    {
+      "1": 407544,
+      "2": {
+        "1": 41,
+        "2": 200,
+        "3": 1,
+        "4": 6295,
+        "7": 1774941984222,
+        "14": "cTrader 2 iOS",
+        "15": "Oz",
+        "16": 10000,
+        "17": 0,
+        "19": "1f85eb51f8c2b140",
+        "20": 0,
+        "21": 1
+      },
+      "3": 2,
+      "4": 5,
+      "10": 0,
+      "13": 1774941992312,
+      "14": 2,
+      "16": "chartQTpending#dark#a177d492-2f52-4df5-9fbe-0eca3041a440#9058251#Live",
+      "20": 0,
+      "21": "1f85eb51f8c2b140",
+      "23": "ctm-9ef8caac2fed4b69809f48230c7f02cd",
+      "24": 0,
+      "26": 2,
+      "30": 767315,
+      "32": 830000,
+      "34": 0,
+      "35": 0,
+      "36": 0,
+      "39": 0,
+      "41": 0,
+      "42": 6005276,
+      "43": "Safiullah",
+      "44": "Faqiri",
+      "46": 0,
+      "49": 1,
+      "54": 2
+    },
+    {
+      "1": 407543,
+      "2": {
+        "1": 41,
+        "2": 100,
+        "3": 2,
+        "4": 6307,
+        "7": 1774941729565,
+        "8": 1774941729779,
+        "13": "Strategy Provider: Saturn",
+        "14": "cTrader Copy",
+        "15": "Oz",
+        "16": 10000,
+        "17": 0,
+        "20": 0
+      },
+      "3": 1,
+      "4": 2,
+      "9": {
+        "9": 15713
+      },
+      "10": 100,
+      "13": 1774941729779,
+      "14": 2,
+      "20": 1,
+      "23": "CH:2e9c7a59-a043-463c-a3da-6070f695c3ad",
+      "24": 0,
+      "26": 3,
+      "30": 767310,
+      "34": 0,
+      "35": 0,
+      "36": 0,
+      "39": 0,
+      "41": 0,
+      "42": 6005288,
+      "43": {
+        "9": "oham",
+        "13": [
+          {
+            "12": "dme"
+          },
+          "sam"
+        ]
+      },
+      "44": "Tafazzolinasr",
+      "54": 2
+    }
+  ],
+  "3": 0
+}
 ```
 
 ---
@@ -108,4 +200,4 @@ Broadest order query. Useful for full activity audit.
 
 ---
 
-*Captured: 2026-03-30 16:42 UTC — OpoFinance live environment*
+*Captured: 2026-03-31 07:40 UTC — OpoFinance live environment*

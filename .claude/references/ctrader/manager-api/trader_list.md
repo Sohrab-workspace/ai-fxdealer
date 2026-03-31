@@ -73,7 +73,7 @@ c.close()
       "2": 6005288,
       "3": 1031,
       "7": 100,
-      "8": 40000,
+      "8": 43058,
       "9": 0,
       "10": {
         "9": "oham",
@@ -108,9 +108,9 @@ c.close()
       },
       "25": 1774887429358,
       "27": 0,
-      "28": 1774888364457,
+      "28": 1774941729801,
       "29": 0,
-      "30": 2,
+      "30": 18,
       "32": 0,
       "34": 0,
       "35": 0,
@@ -277,4 +277,4 @@ Paginate by advancing `fromTimestamp` to the last record's `registrationTimestam
 
 ---
 
-*Captured: 2026-03-30 16:42 UTC — OpoFinance live environment*
+*Captured: 2026-03-31 07:40 UTC — OpoFinance live environment*

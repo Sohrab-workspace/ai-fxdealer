@@ -72,15 +72,15 @@ c.close()
       "5": 1689848886817
     },
     {
-      "1": 37,
-      "2": "Netherlans Index Holiday",
+      "1": 9,
+      "2": "DXY",
       "3": "",
-      "4": "1",
-      "5": 1746010754367
+      "4": "4-",
+      "5": 1751461333595
     }
   ],
   "4": 0,
-  "5": 1770212470679
+  "5": 1774915229457
 }
 ```
 
@@ -125,4 +125,4 @@ Holiday profiles are assigned to schedule profiles.
 
 ---
 
-*Captured: 2026-03-30 16:42 UTC — OpoFinance live environment*
+*Captured: 2026-03-31 07:40 UTC — OpoFinance live environment*

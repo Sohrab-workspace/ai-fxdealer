@@ -114,4 +114,4 @@ GSL is a premium feature where the broker guarantees SL execution at the specifi
 
 ---
 
-*Captured: 2026-03-30 16:42 UTC — OpoFinance live environment*
+*Captured: 2026-03-31 07:40 UTC — OpoFinance live environment*

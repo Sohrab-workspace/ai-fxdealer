@@ -1,6 +1,6 @@
 # Pending Order List
 
-**Category:** orders &nbsp;|&nbsp; **Status:** ⚠️ Error captured
+**Category:** orders &nbsp;|&nbsp; **Status:** ✅ Live
 
 ## Description
 
@@ -64,8 +64,88 @@ c.close()
 
 ### Live Response Sample
 
-```
-ERROR: ERROR_RES code=0 desc=NOT_ENOUGH_RIGHTS
+```json
+{
+  "3": [
+    {
+      "1": 407546,
+      "2": {
+        "1": 41,
+        "2": 100,
+        "3": 1,
+        "4": 6295,
+        "7": 1774942470284,
+        "14": "cTrader 2 iOS",
+        "15": "Oz",
+        "16": 10000,
+        "17": 0,
+        "19": "c3f5285c4fa9b140",
+        "20": 0,
+        "21": 1
+      },
+      "3": 2,
+      "4": 1,
+      "10": 0,
+      "13": 1774942491336,
+      "14": 2,
+      "20": 0,
+      "21": "7b14ae47a1aab140",
+      "23": "ctm-d2952cbb6dc94e7a9ba770555cf39b2a",
+      "24": 0,
+      "26": 2,
+      "30": 767317,
+      "33": 9683000,
+      "34": 0,
+      "35": 0,
+      "36": 0,
+      "39": 0,
+      "41": 0,
+      "42": 6005276,
+      "43": "Safiullah",
+      "44": "Faqiri",
+      "54": 2
+    },
+    {
+      "1": 407545,
+      "2": {
+        "1": 41,
+        "2": 100,
+        "3": 1,
+        "4": 6295,
+        "7": 1774942467106,
+        "14": "cTrader 2 iOS",
+        "15": "Oz",
+        "16": 10000,
+        "17": 0,
+        "19": "f6285c8f82b4b140",
+        "20": 0,
+        "21": 1
+      },
+      "3": 2,
+      "4": 1,
+      "10": 0,
+      "13": 1774942485915,
+      "14": 2,
+      "20": 0,
+      "21": "f6285c8f82b4b140",
+      "23": "ctm-8bc34cab208f4feeaa096aa9dd273ee1",
+      "24": 0,
+      "26": 2,
+      "30": 767316,
+      "33": 8677000,
+      "34": 0,
+      "35": 0,
+      "36": 0,
+      "39": 0,
+      "41": 0,
+      "42": 6005276,
+      "43": "Safiullah",
+      "44": "Faqiri",
+      "54": 2
+    }
+  ],
+  "4": 0
+}
 ```
 
 ---
@@ -109,4 +189,4 @@ Only returns PENDING orders (LIMIT, STOP, STOP_LIMIT). Use OrderManagerList for 
 
 ---
 
-*Captured: 2026-03-30 16:42 UTC — OpoFinance live environment*
+*Captured: 2026-03-31 07:40 UTC — OpoFinance live environment*

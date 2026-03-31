@@ -1,6 +1,6 @@
 # Position Details Lite
 
-**Category:** positions &nbsp;|&nbsp; **Status:** ⚠️ Error captured
+**Category:** positions &nbsp;|&nbsp; **Status:** ✅ Live
 
 ## Description
 
@@ -62,8 +62,42 @@ c.close()
 
 ### Live Response Sample
 
-```
-ERROR: Not captured
+```json
+{
+  "6": {
+    "1": 767289,
+    "3": {
+      "1": 41,
+      "2": 800,
+      "3": 1,
+      "4": 6279,
+      "7": 1774939921813,
+      "13": "Strategy Provider: Welfare",
+      "14": "cTrader Copy",
+      "15": "Oz",
+      "16": 10000,
+      "17": 0,
+      "20": 0
+    },
+    "4": 1,
+    "5": 0,
+    "6": "ec51b81ec5cdb140",
+    "10": 1774939921813,
+    "11": 2,
+    "12": 1,
+    "13": 0,
+    "14": {
+      "9": 15713
+    },
+    "16": 0,
+    "17": 0,
+    "18": 0,
+    "20": 0,
+    "21": 0,
+    "27": 1,
+    "30": 2
+  }
+}
 ```
 
 ---
@@ -107,4 +141,4 @@ Useful for audit trails and P&L breakdown by swap vs. price movement.
 
 ---
 
-*Captured: 2026-03-30 16:42 UTC — OpoFinance live environment*
+*Captured: 2026-03-31 07:40 UTC — OpoFinance live environment*

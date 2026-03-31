@@ -1,6 +1,6 @@
 # Open Position List
 
-**Category:** positions &nbsp;|&nbsp; **Status:** ⚠️ Error captured
+**Category:** positions &nbsp;|&nbsp; **Status:** ✅ Live
 
 ## Description
 
@@ -64,8 +64,76 @@ c.close()
 
 ### Live Response Sample
 
-```
-ERROR: ERROR_RES code=0 desc=NOT_ENOUGH_RIGHTS
+```json
+{
+  "3": [
+    {
+      "1": 767289,
+      "3": {
+        "1": 41,
+        "2": 800,
+        "3": 1,
+        "4": 6279,
+        "7": 1774939921813,
+        "13": "Strategy Provider: Welfare",
+        "14": "cTrader Copy",
+        "15": "Oz",
+        "16": 10000,
+        "20": 0
+      },
+      "4": 1,
+      "5": 0,
+      "6": "ec51b81ec5cdb140",
+      "10": 1774939921813,
+      "11": 2,
+      "13": 0,
+      "14": {
+        "9": 15713
+      },
+      "16": 0,
+      "17": 0,
+      "18": 0,
+      "20": 0,
+      "21": 0,
+      "23": 36461,
+      "30": 2,
+      "31": 0
+    },
+    {
+      "1": 767227,
+      "3": {
+        "1": 41,
+        "2": 300,
+        "3": 1,
+        "4": 4822,
+        "7": 1774932849268,
+        "14": "cTrader 2 iOS",
+        "15": "Oz",
+        "16": 10000,
+        "20": 0,
+        "21": 1
+      },
+      "4": 1,
+      "5": 0,
+      "6": "85eb51b89ed4b140",
+      "10": 1774932849268,
+      "11": 2,
+      "13": 18446744073709551610,
+      "14": {
+        "487": 2212353045893
+      },
+      "16": 0,
+      "17": 0,
+      "18": 0,
+      "20": 0,
+      "21": 0,
+      "23": 6847,
+      "30": 2,
+      "31": 0
+    }
+  ],
+  "4": 0
+}
 ```
 
 ---
@@ -109,4 +177,4 @@ Only returns currently open positions. For closed positions use ManagerClosedPos
 
 ---
 
-*Captured: 2026-03-30 16:42 UTC — OpoFinance live environment*
+*Captured: 2026-03-31 07:40 UTC — OpoFinance live environment*

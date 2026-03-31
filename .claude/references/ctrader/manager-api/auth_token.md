@@ -59,9 +59,7 @@ c.close()
 
 ```json
 {
-  "2": {
-    "6": "424d5b-3110-49f0-a609-4fdbc942f4ea-1774888959329"
-  }
+  "2": "722b1ddc-e361-41af-91b4-47aaf8ac81f8-1774942814644"
 }
 ```
 
@@ -106,4 +104,4 @@ Token is time-limited. Store and reuse within TTL. Renew before expiry.
 
 ---
 
-*Captured: 2026-03-30 16:42 UTC — OpoFinance live environment*
+*Captured: 2026-03-31 07:40 UTC — OpoFinance live environment*

@@ -59,7 +59,7 @@ c.close()
 
 ```json
 {
-  "2": 1774888958769
+  "2": 1774942814082
 }
 ```
 
@@ -104,4 +104,4 @@ No request fields needed — send empty payload. Good first call after auth to v
 
 ---
 
-*Captured: 2026-03-30 16:42 UTC — OpoFinance live environment*
+*Captured: 2026-03-31 07:40 UTC — OpoFinance live environment*

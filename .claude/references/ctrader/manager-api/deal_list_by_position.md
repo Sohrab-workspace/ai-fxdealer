@@ -1,6 +1,6 @@
 # Deal List By Position ID
 
-**Category:** deals &nbsp;|&nbsp; **Status:** ⚠️ Error captured
+**Category:** deals &nbsp;|&nbsp; **Status:** ✅ Live
 
 ## Description
 
@@ -63,8 +63,52 @@ c.close()
 
 ### Live Response Sample
 
-```
-ERROR: Not captured
+```json
+{
+  "2": {
+    "1": 326430,
+    "2": 407529,
+    "3": 767289,
+    "4": 6279,
+    "5": 800,
+    "6": 800,
+    "7": 41,
+    "8": 1774939921583,
+    "9": 1774939921813,
+    "10": 1774939921583,
+    "11": "ec51b81ec5cdb140",
+    "13": 1,
+    "14": 2,
+    "15": 1,
+    "16": {
+      "9": 15713
+    },
+    "17": 0,
+    "19": 2,
+    "20": {
+      "9": 15713
+    },
+    "23": "cTrader Copy",
+    "24": "Strategy Provider: Welfare",
+    "25": 305784,
+    "26": {
+      "9": 15713
+    },
+    "31": 66,
+    "35": 0,
+    "36": 0,
+    "37": 0,
+    "40": 0,
+    "41": "Oz",
+    "42": 10000,
+    "43": 72,
+    "44": 0,
+    "45": 210883760,
+    "46": 0,
+    "58": 2
+  },
+  "3": 0
+}
 ```
 
 ---
@@ -108,4 +152,4 @@ Includes opening deal, partial closes, and the final closing deal.
 
 ---
 
-*Captured: 2026-03-30 16:42 UTC — OpoFinance live environment*
+*Captured: 2026-03-31 07:40 UTC — OpoFinance live environment*

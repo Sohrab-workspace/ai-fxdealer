@@ -1,6 +1,6 @@
 # cTrader Manager API — Complete Reference
 
-Captured live from the OpoFinance environment on 2026-03-30.
+Captured live from the OpoFinance environment on 2026-03-31.
 
 ## Connection
 
@@ -46,18 +46,18 @@ c.close()
 | ✅ | [Liquidity Feed Symbol List](liquidity_feed_symbols.md) | `ProtoLiquidityFeedSymbolListReq` | configuration |
 | ✅ | [Price Stream List](price_stream_list.md) | `ProtoPriceStreamListReq` | configuration |
 | ⚠️ | [Manual Deal List (Dealer Queue)](manual_deal_list.md) | `ProtoManualDealListReq` | dealing |
-| ⚠️ | [Deal List By Position ID](deal_list_by_position.md) | `ProtoManagerDealListByPositionIdReq` | deals |
+| ✅ | [Deal List By Position ID](deal_list_by_position.md) | `ProtoManagerDealListByPositionIdReq` | deals |
 | ✅ | [Deal List](deal_list.md) | `ProtoManagerDealListReq` | deals |
 | ✅ | [Get Deal By ID](get_deal.md) | `ProtoManagerGetDealReq` | deals |
 | ✅ | [Group List (Light)](group_list.md) | `ProtoLightGroupListReq` | groups |
 | ✅ | [Group By ID (Full)](group_by_id.md) | `ProtoGroupByIdReq` | groups |
 | ⚠️ | [Manager List](manager_list.md) | `ProtoManagerListReq` | managers |
-| ⚠️ | [Pending Order List](pending_order_list.md) | `ProtoPendingOrderListReq` | orders |
-| ⚠️ | [Order Manager List (All Orders)](order_manager_list.md) | `ProtoOrderManagerListReq` | orders |
-| ⚠️ | [Order Details](order_details.md) | `ProtoOrderDetailsReq` | orders |
-| ⚠️ | [Open Position List](open_position_list.md) | `ProtoPositionListReq` | positions |
-| ⚠️ | [Closed Position List](closed_position_list.md) | `ProtoManagerClosedPositionListReq` | positions |
-| ⚠️ | [Position Details Lite](position_details_lite.md) | `ProtoPositionDetailsLiteReq` | positions |
+| ✅ | [Pending Order List](pending_order_list.md) | `ProtoPendingOrderListReq` | orders |
+| ✅ | [Order Manager List (All Orders)](order_manager_list.md) | `ProtoOrderManagerListReq` | orders |
+| ✅ | [Order Details](order_details.md) | `ProtoOrderDetailsReq` | orders |
+| ✅ | [Open Position List](open_position_list.md) | `ProtoPositionListReq` | positions |
+| ✅ | [Closed Position List](closed_position_list.md) | `ProtoManagerClosedPositionListReq` | positions |
+| ✅ | [Position Details Lite](position_details_lite.md) | `ProtoPositionDetailsLiteReq` | positions |
 | ✅ | [Schedule Profile List](schedule_profiles.md) | `ProtoScheduleProfileListReq` | profiles |
 | ✅ | [Commission Profile List](commission_profiles.md) | `ProtoCommissionProfileListReq` | profiles |
 | ✅ | [Volume Profile List](volume_profiles.md) | `ProtoVolumeProfileListReq` | profiles |
