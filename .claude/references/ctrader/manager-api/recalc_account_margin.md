@@ -1,6 +1,6 @@
 # Recalculate Account Margin
 
-**Category:** risk &nbsp;|&nbsp; **Status:** ⚠️ Error captured
+**Category:** risk &nbsp;|&nbsp; **Status:** ⚠️ INVALID_REQUEST — request format unresolved
 
 ## Description
 
@@ -63,6 +63,11 @@ c.close()
 ```
 ERROR: ERROR_RES code=0 desc=INVALID_REQUEST
 ```
+
+> Tested with `traderId` in field 1, field 2, and empty payload — all return `INVALID_REQUEST`.
+> Tested with accounts that have open positions (traderId=6005276) and without.
+> This endpoint may require a specific server-side precondition or an undocumented additional field.
+> The Spotware docs state field 2 = traderId but the server rejects all attempts.
 
 ---
 
