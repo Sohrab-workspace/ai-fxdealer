@@ -1,0 +1,21 @@
+# Alembic migration runner — one-shot container
+FROM python:3.12-slim
+
+WORKDIR /app
+
+# Install uv
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
+
+# Copy workspace manifests first (layer cache)
+COPY pyproject.toml .
+COPY packages/shared/pyproject.toml packages/shared/pyproject.toml
+COPY packages/db/pyproject.toml packages/db/pyproject.toml
+COPY packages/queue/pyproject.toml packages/queue/pyproject.toml
+
+# Copy source
+COPY packages/ packages/
+
+RUN uv sync --package db --no-dev
+
+CMD ["uv", "run", "--package", "db", \
+     "alembic", "-c", "packages/db/alembic.ini", "upgrade", "head"]

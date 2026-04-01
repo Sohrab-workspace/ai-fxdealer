@@ -1,0 +1,25 @@
+[project]
+name = "collector-fxbo"
+version = "0.1.0"
+requires-python = ">=3.11"
+# DEFERRED: FXBO MySQL 88.218.200.135:3306 is not reachable from current network.
+# When MySQL access is available, add: pymysql>=1.1, cryptography>=42.0
+
+dependencies = [
+    "sqlalchemy>=2.0",
+    "psycopg2-binary>=2.9",
+    "structlog>=24.0",
+    "arq>=0.25",
+    "shared",
+    "db",
+    "queue",
+]
+
+[tool.uv.sources]
+shared = { path = "../../packages/shared" }
+db     = { path = "../../packages/db" }
+queue  = { path = "../../packages/queue" }
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"

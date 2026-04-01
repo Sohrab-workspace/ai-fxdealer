@@ -1288,3 +1288,402 @@ class RawMT4Summary(Base):
         Index("ix_raw_mt4_summary_broker_collected", "broker_id", "collected_at"),
         Index("ix_raw_mt4_summary_broker_symbol", "broker_id", "symbol"),
     )
+
+
+# =============================================================================
+# MT5 Online
+# =============================================================================
+
+class RawMT5Online(Base):
+    """
+    Raw MT5 active session records from MT5Manager.OnlineGetArray().
+
+    One record per active manager/trader session at collection time.
+    Session identifiers change on reconnect — dedup on (broker_id, server_id, session_id).
+
+    Plain PostgreSQL (low cardinality, polled every ~30s).
+    Source: MT5Manager.OnlineGetArray() — MTOnline object (8 fields).
+    Fields captured live 2026-04-01: Address, Build, ComputerID, Group,
+                                     Login, SessionID, Time, Type
+    """
+
+    __tablename__ = "raw_mt5_online"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    broker_id = Column(UUID(as_uuid=True), nullable=False)
+    server_id = Column(UUID(as_uuid=True))
+
+    # All 8 MTOnline fields extracted
+    login = Column(BigInteger, nullable=False)       # Login — trading or manager account
+    session_id = Column(BigInteger, nullable=False)  # SessionID — unique per TCP session
+    address = Column(String)                         # Address — client IP address
+    build = Column(Integer)                          # Build — client terminal build number
+    computer_id = Column(String)                     # ComputerID — MD5 of machine identifiers
+    group = Column(String)                           # Group — account group name
+    time = Column(BigInteger)                        # Time — session start unix epoch (seconds)
+    type = Column(Integer)                           # Type — session type bitmask (32=manager)
+
+    payload_json = Column(JSONB, nullable=False)
+
+    collected_at = Column(DateTime(timezone=True), nullable=False)
+    ingestion_hash = Column(String)
+    status = Column(String, nullable=False, server_default="active")
+    created_at = Column(DateTime(timezone=True), nullable=False, server_default=text("NOW()"))
+    updated_at = Column(DateTime(timezone=True))
+    archived_at = Column(DateTime(timezone=True))
+
+    __table_args__ = (
+        Index(
+            "uq_raw_mt5_online_active",
+            "broker_id", "server_id", "session_id",
+            unique=True,
+            postgresql_where=text("status = 'active'"),
+        ),
+        Index("ix_raw_mt5_online_broker_collected", "broker_id", "collected_at"),
+        Index("ix_raw_mt5_online_broker_login", "broker_id", "login"),
+    )
+
+
+# =============================================================================
+# cTrader raw tables
+# Source: Spotware Manager API (Protobuf over TCP)
+# All monetary values are cents (divide by 10^money_digits for display)
+# All volumes are cents-of-lot-size (divide by lot_size*100 for lots)
+# Timestamps are Unix milliseconds
+# =============================================================================
+
+class RawCTraderAccount(Base):
+    """
+    Raw cTrader trader (account) records from ProtoTraderListReq (payloadType 403).
+
+    Hybrid raw storage: key ProtoTrader fields extracted for indexing,
+    full protobuf-decoded payload preserved in payload_json.
+
+    Plain PostgreSQL — low volume, re-synced on schedule.
+    Source: Spotware Manager API → ProtoTrader (entities.md)
+    Fields: traderId, login, groupId, balance, accountType, registrationTimestamp,
+            lastConnectTimestamp, online, deleted, accessRights, leverageInCents,
+            depositAssetId, moneyDigits, version, swapFree, isLimitedRisk,
+            subAccountOf, fairStopOut
+    """
+
+    __tablename__ = "raw_ctrader_accounts"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    broker_id = Column(UUID(as_uuid=True), nullable=False)
+    server_id = Column(UUID(as_uuid=True))            # cTrader broker server UUID
+
+    # Extracted ProtoTrader fields
+    trader_id = Column(BigInteger, nullable=False)    # field 1 — internal unique ID
+    login = Column(BigInteger, nullable=False)         # field 2 — login shown in cTrader
+    group_id = Column(BigInteger)                     # field 3 — group assignment
+    balance_cents = Column(BigInteger)                # field 8 — balance in cents
+    account_type = Column(Integer)                    # field 9 — HEDGED=1 / NETTED=2
+    registration_ts = Column(BigInteger)              # field 25 — registration Unix ms
+    last_connect_ts = Column(BigInteger)              # field 26 — last login Unix ms
+    online = Column(Integer)                          # field 27 — 1=online
+    deleted = Column(Integer)                         # field 29 — 1=soft-deleted
+    access_rights = Column(Integer)                   # field 59 — ProtoAccessRights int
+    leverage_in_cents = Column(BigInteger)            # field 66 — e.g. 5000 = 50x
+    deposit_asset_id = Column(BigInteger)             # field 61 — deposit currency asset
+    money_digits = Column(Integer)                    # field 80 — precision exponent
+    swap_free = Column(Integer)                       # field 64 — 1=Islamic account
+    is_limited_risk = Column(Integer)                 # field 78 — 1=no negative balance
+    version = Column(BigInteger)                      # field 74 — entity version
+    source_timestamp = Column(DateTime(timezone=True))  # derived from registration_ts
+
+    payload_json = Column(JSONB, nullable=False)
+
+    collected_at = Column(DateTime(timezone=True), nullable=False)
+    ingestion_hash = Column(String)
+    status = Column(String, nullable=False, server_default="active")
+    created_at = Column(DateTime(timezone=True), nullable=False, server_default=text("NOW()"))
+    updated_at = Column(DateTime(timezone=True))
+    archived_at = Column(DateTime(timezone=True))
+
+    __table_args__ = (
+        Index(
+            "uq_raw_ctrader_accounts_active",
+            "broker_id", "server_id", "trader_id",
+            unique=True,
+            postgresql_where=text("status = 'active'"),
+        ),
+        Index("ix_raw_ctrader_accounts_broker_collected", "broker_id", "collected_at"),
+        Index("ix_raw_ctrader_accounts_broker_login", "broker_id", "login"),
+        Index("ix_raw_ctrader_accounts_broker_group", "broker_id", "group_id"),
+    )
+
+
+class RawCTraderDeal(Base):
+    """
+    Raw cTrader deal (execution) records from ProtoManagerDealListReq (payloadType 431).
+
+    TimescaleDB hypertable — partitioned by collected_at.
+    Retention policy: 2 years.
+    Source: Spotware Manager API → ProtoDeal (entities.md)
+    Fields: dealId, orderId, positionId, traderId, volume, filledVolume, symbolId,
+            createTimestamp, executionTimestamp, utcLastUpdateTimestamp,
+            executionPrice, tradeSide, dealStatus, dealType, commission,
+            bookType, lpExecutionPrice, moneyDigits, equity
+    """
+
+    __tablename__ = "raw_ctrader_deals"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    broker_id = Column(UUID(as_uuid=True), nullable=False)
+    server_id = Column(UUID(as_uuid=True))
+
+    # Extracted ProtoDeal fields
+    deal_id = Column(BigInteger, nullable=False)          # field 1
+    order_id = Column(BigInteger)                         # field 2
+    position_id = Column(BigInteger)                      # field 3
+    trader_id = Column(BigInteger, nullable=False)        # field 4
+    volume = Column(BigInteger)                           # field 5 — ordered (cents of lot)
+    filled_volume = Column(BigInteger)                    # field 6 — actual filled
+    symbol_id = Column(BigInteger)                        # field 7
+    create_ts = Column(BigInteger, nullable=False)        # field 8 — Unix ms, use for pagination
+    execution_ts = Column(BigInteger)                     # field 9 — Unix ms
+    execution_price = Column(Float)                       # field 11 — with markup
+    trade_side = Column(Integer)                          # field 13 — BUY=1 / SELL=2
+    deal_status = Column(Integer)                         # field 14 — ProtoDealStatus
+    deal_type = Column(Integer)                           # field 15 — ProtoDealType
+    commission = Column(BigInteger)                       # field 17 — cents
+    book_type = Column(Integer)                           # field 19 — A=1 / B=2
+    lp_execution_price = Column(Float)                   # field 20 — without markup
+    money_digits = Column(Integer)                        # field 58
+    equity_cents = Column(BigInteger)                    # field 57 — equity at deal time
+    source_timestamp = Column(DateTime(timezone=True))    # derived from create_ts
+
+    payload_json = Column(JSONB, nullable=False)
+
+    collected_at = Column(DateTime(timezone=True), nullable=False)
+    ingestion_hash = Column(String)
+    status = Column(String, nullable=False, server_default="active")
+    created_at = Column(DateTime(timezone=True), nullable=False, server_default=text("NOW()"))
+    updated_at = Column(DateTime(timezone=True))
+    archived_at = Column(DateTime(timezone=True))
+
+    __table_args__ = (
+        Index(
+            "uq_raw_ctrader_deals_active",
+            "broker_id", "server_id", "deal_id",
+            unique=True,
+            postgresql_where=text("status = 'active'"),
+        ),
+        Index("ix_raw_ctrader_deals_broker_collected", "broker_id", "collected_at"),
+        Index("ix_raw_ctrader_deals_broker_trader", "broker_id", "trader_id", "collected_at"),
+        Index("ix_raw_ctrader_deals_broker_symbol", "broker_id", "symbol_id", "collected_at"),
+    )
+
+
+class RawCTraderPosition(Base):
+    """
+    Raw cTrader position records — both open (payloadType 407) and closed (720).
+
+    Single table with position_status distinguishing open vs closed.
+    ProtoPosition embeds ProtoTradeData for symbol, volume, side, trader, timestamps.
+
+    Plain PostgreSQL — re-synced on schedule (open); historical fetch for closed.
+    Source: Spotware Manager API → ProtoPosition + ProtoTradeData (entities.md)
+    """
+
+    __tablename__ = "raw_ctrader_positions"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    broker_id = Column(UUID(as_uuid=True), nullable=False)
+    server_id = Column(UUID(as_uuid=True))
+
+    # Extracted ProtoPosition fields
+    position_id = Column(BigInteger, nullable=False)     # ProtoPosition.1
+    position_status = Column(Integer)                    # ProtoPosition.4 — OPEN=1 / CLOSED=2
+    swap_cents = Column(BigInteger)                      # ProtoPosition.5 — accumulated swap
+    price = Column(Float)                                # ProtoPosition.6 — VWAP open price
+    stop_loss = Column(Float)                            # ProtoPosition.7
+    take_profit = Column(Float)                          # ProtoPosition.8
+    commission_cents = Column(BigInteger)                # ProtoPosition.13
+    book_type = Column(Integer)                          # ProtoPosition.11 — A=1 / B=2
+    money_digits = Column(Integer)                       # ProtoPosition.30
+    used_margin_cents = Column(BigInteger)               # ProtoPosition.23
+
+    # Extracted ProtoTradeData (embedded in position field 3)
+    symbol_id = Column(BigInteger)                       # tradeData.1
+    volume = Column(BigInteger)                          # tradeData.2 — cents of lot
+    trade_side = Column(Integer)                         # tradeData.3 — BUY=1 / SELL=2
+    trader_id = Column(BigInteger, nullable=False)       # tradeData.4
+    open_ts = Column(BigInteger)                         # tradeData.7 — Unix ms
+    close_ts = Column(BigInteger)                        # tradeData.8 — Unix ms (closed)
+    source_timestamp = Column(DateTime(timezone=True))   # derived from open_ts
+
+    payload_json = Column(JSONB, nullable=False)
+
+    collected_at = Column(DateTime(timezone=True), nullable=False)
+    ingestion_hash = Column(String)
+    status = Column(String, nullable=False, server_default="active")
+    created_at = Column(DateTime(timezone=True), nullable=False, server_default=text("NOW()"))
+    updated_at = Column(DateTime(timezone=True))
+    archived_at = Column(DateTime(timezone=True))
+
+    __table_args__ = (
+        Index(
+            "uq_raw_ctrader_positions_active",
+            "broker_id", "server_id", "position_id",
+            unique=True,
+            postgresql_where=text("status = 'active'"),
+        ),
+        Index("ix_raw_ctrader_positions_broker_collected", "broker_id", "collected_at"),
+        Index("ix_raw_ctrader_positions_broker_trader", "broker_id", "trader_id"),
+        Index("ix_raw_ctrader_positions_broker_symbol", "broker_id", "symbol_id"),
+    )
+
+
+class RawCTraderOrder(Base):
+    """
+    Raw cTrader pending order records from ProtoPendingOrderListReq (payloadType 409).
+
+    ProtoOrder embeds ProtoTradeData for symbol, volume, side, trader, timestamps.
+    Plain PostgreSQL — re-synced frequently for open orders.
+
+    Source: Spotware Manager API → ProtoOrder + ProtoTradeData (entities.md)
+    """
+
+    __tablename__ = "raw_ctrader_orders"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    broker_id = Column(UUID(as_uuid=True), nullable=False)
+    server_id = Column(UUID(as_uuid=True))
+
+    # Extracted ProtoOrder fields
+    order_id = Column(BigInteger, nullable=False)        # ProtoOrder.1
+    order_type = Column(Integer)                         # ProtoOrder.3 — ProtoOrderType
+    order_status = Column(Integer)                       # ProtoOrder.4 — ProtoOrderStatus
+    expiration_ts = Column(BigInteger)                   # ProtoOrder.6 — Unix ms
+    execution_price = Column(Float)                      # ProtoOrder.9
+    executed_volume = Column(BigInteger)                 # ProtoOrder.10 — cents
+    stop_loss = Column(Float)                            # ProtoOrder.11
+    take_profit = Column(Float)                          # ProtoOrder.12
+    limit_price = Column(Float)                          # ProtoOrder.21
+    stop_price = Column(Float)                           # ProtoOrder.22
+    commission_cents = Column(BigInteger)                # ProtoOrder.24
+    time_in_force = Column(Integer)                      # ProtoOrder.26 — ProtoTimeInForce
+    position_id = Column(BigInteger)                     # ProtoOrder.30
+    book_type = Column(Integer)                          # ProtoOrder.14 — A=1 / B=2
+    money_digits = Column(Integer)                       # ProtoOrder.54
+
+    # Extracted from embedded ProtoTradeData (field 2)
+    symbol_id = Column(BigInteger)                       # tradeData.1
+    volume = Column(BigInteger)                          # tradeData.2 — cents of lot
+    trade_side = Column(Integer)                         # tradeData.3 — BUY=1 / SELL=2
+    trader_id = Column(BigInteger, nullable=False)       # tradeData.4
+    open_ts = Column(BigInteger)                         # tradeData.7 — Unix ms
+    source_timestamp = Column(DateTime(timezone=True))   # derived from open_ts
+
+    payload_json = Column(JSONB, nullable=False)
+
+    collected_at = Column(DateTime(timezone=True), nullable=False)
+    ingestion_hash = Column(String)
+    status = Column(String, nullable=False, server_default="active")
+    created_at = Column(DateTime(timezone=True), nullable=False, server_default=text("NOW()"))
+    updated_at = Column(DateTime(timezone=True))
+    archived_at = Column(DateTime(timezone=True))
+
+    __table_args__ = (
+        Index(
+            "uq_raw_ctrader_orders_active",
+            "broker_id", "server_id", "order_id",
+            unique=True,
+            postgresql_where=text("status = 'active'"),
+        ),
+        Index("ix_raw_ctrader_orders_broker_collected", "broker_id", "collected_at"),
+        Index("ix_raw_ctrader_orders_broker_trader", "broker_id", "trader_id"),
+        Index("ix_raw_ctrader_orders_broker_symbol", "broker_id", "symbol_id"),
+    )
+
+
+class RawCTraderSymbol(Base):
+    """
+    Raw cTrader symbol configuration from ProtoManagerSymbolListReq (payloadType 467).
+
+    ProtoManagerSymbol fields are mostly numeric-keyed (Protobuf encoding).
+    Key fields extracted where field number → name is known from Spotware docs.
+    Full payload preserved in payload_json for all other fields.
+
+    Plain PostgreSQL — low volume, re-synced on startup and config change.
+    Source: Spotware Manager API → ProtoManagerSymbol (symbol_list.md live response)
+    Key extracted fields: symbolId (1), digits (5), lotSize (17), minVolume (18)
+    """
+
+    __tablename__ = "raw_ctrader_symbols"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    broker_id = Column(UUID(as_uuid=True), nullable=False)
+    server_id = Column(UUID(as_uuid=True))
+
+    # ProtoManagerSymbol fields (Protobuf field numbers mapped from live capture)
+    symbol_id = Column(BigInteger, nullable=False)       # field 1 — internal symbol ID
+    digits = Column(Integer)                             # field 5 — price decimal places
+    lot_size = Column(BigInteger)                        # field 17 — lot size (e.g. 100000)
+    min_volume = Column(BigInteger)                      # field 18 — min volume (cents of lot)
+    # symbol_name lives inside a nested message — stored in payload_json only
+    # Full ProtoManagerSymbol is preserved below for all other fields
+
+    payload_json = Column(JSONB, nullable=False)
+
+    collected_at = Column(DateTime(timezone=True), nullable=False)
+    ingestion_hash = Column(String)
+    status = Column(String, nullable=False, server_default="active")
+    created_at = Column(DateTime(timezone=True), nullable=False, server_default=text("NOW()"))
+    updated_at = Column(DateTime(timezone=True))
+    archived_at = Column(DateTime(timezone=True))
+
+    __table_args__ = (
+        Index(
+            "uq_raw_ctrader_symbols_active",
+            "broker_id", "server_id", "symbol_id",
+            unique=True,
+            postgresql_where=text("status = 'active'"),
+        ),
+        Index("ix_raw_ctrader_symbols_broker_collected", "broker_id", "collected_at"),
+    )
+
+
+class RawCTraderGroup(Base):
+    """
+    Raw cTrader group (account group) records from LightGroupListReq (payloadType 473).
+
+    ProtoGroup fields are partially numeric-keyed. Key fields extracted.
+    Full payload preserved in payload_json.
+
+    Plain PostgreSQL — low volume config/reference data.
+    Source: Spotware Manager API → ProtoGroup (group_list.md live response)
+    Key extracted: groupId (1), groupName (nested string field 2.8)
+    """
+
+    __tablename__ = "raw_ctrader_groups"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    broker_id = Column(UUID(as_uuid=True), nullable=False)
+    server_id = Column(UUID(as_uuid=True))
+
+    # ProtoGroup key fields
+    group_id = Column(BigInteger, nullable=False)        # field 1 — internal group ID
+    # group_name is nested in a protobuf string field — extracted by collector at ingest time
+    group_name = Column(String)                          # extracted from field 2.8 by collector
+
+    payload_json = Column(JSONB, nullable=False)
+
+    collected_at = Column(DateTime(timezone=True), nullable=False)
+    ingestion_hash = Column(String)
+    status = Column(String, nullable=False, server_default="active")
+    created_at = Column(DateTime(timezone=True), nullable=False, server_default=text("NOW()"))
+    updated_at = Column(DateTime(timezone=True))
+    archived_at = Column(DateTime(timezone=True))
+
+    __table_args__ = (
+        Index(
+            "uq_raw_ctrader_groups_active",
+            "broker_id", "server_id", "group_id",
+            unique=True,
+            postgresql_where=text("status = 'active'"),
+        ),
+        Index("ix_raw_ctrader_groups_broker_collected", "broker_id", "collected_at"),
+    )

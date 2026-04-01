@@ -1,0 +1,25 @@
+[project]
+name = "collector-mt5"
+version = "0.1.0"
+requires-python = ">=3.11"
+
+dependencies = [
+    "MT5Manager>=5.0.0",
+    "numpy>=1.7",
+    "sqlalchemy>=2.0",
+    "psycopg2-binary>=2.9",
+    "structlog>=24.0",
+    "arq>=0.25",
+    "shared",
+    "db",
+    "queue",
+]
+
+[tool.uv.sources]
+shared = { path = "../../packages/shared" }
+db     = { path = "../../packages/db" }
+queue  = { path = "../../packages/queue" }
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"

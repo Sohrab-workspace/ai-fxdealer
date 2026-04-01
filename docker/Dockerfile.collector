@@ -1,0 +1,26 @@
+# Collector worker — Linux-compatible collectors (cTrader, FXBO, bridge, lp, market)
+# MT5 and MT4 collectors require Windows containers — build separately.
+FROM python:3.12-slim
+
+WORKDIR /app
+
+# Install uv
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
+
+# Copy workspace manifests first (layer cache)
+COPY pyproject.toml .
+COPY packages/shared/pyproject.toml packages/shared/pyproject.toml
+COPY packages/db/pyproject.toml packages/db/pyproject.toml
+COPY packages/queue/pyproject.toml packages/queue/pyproject.toml
+COPY services/collector-ctrader/pyproject.toml services/collector-ctrader/pyproject.toml
+COPY services/collector-fxbo/pyproject.toml services/collector-fxbo/pyproject.toml
+
+# Copy source
+COPY packages/ packages/
+COPY services/collector-ctrader/ services/collector-ctrader/
+COPY services/collector-fxbo/ services/collector-fxbo/
+
+RUN uv sync --package queue --package collector-ctrader --package collector-fxbo --no-dev
+
+CMD ["uv", "run", "--package", "queue", \
+     "arq", "queue.workers.collector_worker.WorkerSettings"]

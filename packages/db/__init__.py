@@ -17,6 +17,7 @@ from .models import (
     RawMT5Tick,
     RawMT5Exposure,
     RawMT5Summary,
+    RawMT5Online,
     RawCollectorRun,
     RawCollectorError,
     RawMT4Account,
@@ -28,6 +29,12 @@ from .models import (
     RawMT4Online,
     RawMT4Margin,
     RawMT4Summary,
+    RawCTraderAccount,
+    RawCTraderDeal,
+    RawCTraderPosition,
+    RawCTraderOrder,
+    RawCTraderSymbol,
+    RawCTraderGroup,
 )
 
 __all__ = [
@@ -49,6 +56,7 @@ __all__ = [
     "RawMT5Tick",
     "RawMT5Exposure",
     "RawMT5Summary",
+    "RawMT5Online",
     "RawCollectorRun",
     "RawCollectorError",
     "RawMT4Account",
@@ -60,4 +68,10 @@ __all__ = [
     "RawMT4Online",
     "RawMT4Margin",
     "RawMT4Summary",
+    "RawCTraderAccount",
+    "RawCTraderDeal",
+    "RawCTraderPosition",
+    "RawCTraderOrder",
+    "RawCTraderSymbol",
+    "RawCTraderGroup",
 ]
