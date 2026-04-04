@@ -27,6 +27,7 @@ DEMO_CONN = dict(
     password="k0OKby8J",
     dbname="ctrader_spotware",
     connect_timeout=20,
+    sslmode="disable",
 )
 
 LIVE_CONN = dict(
@@ -36,6 +37,7 @@ LIVE_CONN = dict(
     password="90mVYphS",
     dbname="ctrader_spotware",
     connect_timeout=20,
+    sslmode="disable",
 )
 
 # PII field patterns — values will be replaced with [REDACTED]
@@ -55,15 +57,18 @@ def redact_row(columns, row):
     return result
 
 
+SCHEMA = "opofinance_live"  # Demo would be opofinance_demo
+
+
 def get_tables(conn):
     with conn.cursor() as cur:
         cur.execute("""
             SELECT table_name
             FROM information_schema.tables
-            WHERE table_schema = 'public'
+            WHERE table_schema = %s
               AND table_type = 'BASE TABLE'
             ORDER BY table_name
-        """)
+        """, (SCHEMA,))
         return [row[0] for row in cur.fetchall()]
 
 
@@ -80,17 +85,17 @@ def get_columns(conn, table):
                     c.ordinal_position
                 ) AS description
             FROM information_schema.columns c
-            WHERE c.table_schema = 'public'
+            WHERE c.table_schema = %s
               AND c.table_name = %s
             ORDER BY c.ordinal_position
-        """, (table,))
+        """, (SCHEMA, table))
         return cur.fetchall()
 
 
 def get_samples(conn, table, columns, limit=3):
     with conn.cursor() as cur:
         try:
-            cur.execute(f'SELECT * FROM "{table}" LIMIT {limit}')
+            cur.execute(f'SELECT * FROM {SCHEMA}."{table}" LIMIT {limit}')
             rows = cur.fetchall()
             col_names = [desc[0] for desc in cur.description]
             redacted = [redact_row(col_names, row) for row in rows]
@@ -145,9 +150,9 @@ def write_table_md(table, columns, sample_cols, sample_rows):
 
 
 def main():
-    print("Connecting to Demo DB...")
+    print("Connecting to Live DB...")
     try:
-        conn = psycopg2.connect(**DEMO_CONN)
+        conn = psycopg2.connect(**LIVE_CONN)
         print("Connected.")
     except Exception as e:
         print(f"Connection failed: {e}")

@@ -25,7 +25,7 @@ import structlog
 from shared.base_collector import BaseCollector
 from db.ingestion import save_raw_records, log_collector_run, log_collector_error
 
-from .manager_client import (
+from manager_client import (
     ManagerAPIClient,
     PT,
     fields_to_dict,
@@ -118,7 +118,7 @@ class CTraderCollector(BaseCollector):
         totals: dict[str, int] = {}
         start = time.monotonic()
 
-        for entity in ("accounts", "symbols", "groups", "positions"):
+        for entity in ("accounts", "symbols", "groups"):
             try:
                 records = self.fetch_entity(entity)
                 saved = self.save_raw(entity, records)
@@ -126,7 +126,7 @@ class CTraderCollector(BaseCollector):
             except Exception as exc:
                 self.handle_error(exc, {"entity": entity, "sync_mode": "bootstrap"})
 
-        for entity in ("deals", "orders"):
+        for entity in ("positions", "deals", "orders"):
             try:
                 records = self.fetch_entity(entity, from_ms=from_ms, to_ms=to_ms)
                 saved = self.save_raw(entity, records)
@@ -156,7 +156,7 @@ class CTraderCollector(BaseCollector):
         totals: dict[str, int] = {}
         start = time.monotonic()
 
-        for entity in ("accounts", "positions"):
+        for entity in ("accounts",):
             try:
                 records = self.fetch_entity(entity)
                 saved = self.save_raw(entity, records)
@@ -164,7 +164,7 @@ class CTraderCollector(BaseCollector):
             except Exception as exc:
                 self.handle_error(exc, {"entity": entity, "sync_mode": "incremental"})
 
-        for entity in ("deals", "orders"):
+        for entity in ("positions", "deals", "orders"):
             try:
                 records = self.fetch_entity(entity, from_ms=from_ms, to_ms=to_ms)
                 saved = self.save_raw(entity, records)
@@ -188,7 +188,22 @@ class CTraderCollector(BaseCollector):
 
     # ── fetch_entity ──────────────────────────────────────────────────────────
 
+    def _ensure_connected(self) -> None:
+        """Reconnect if the socket is gone or stale."""
+        if self._client is None or not self._client.connected:
+            self.connect()
+            return
+        # Verify socket is still alive with a lightweight health ping
+        try:
+            result = self._client.request(
+                PT["SERVER_TIME_REQ"], PT["SERVER_TIME_RES"], timeout_override=5
+            )
+        except Exception:
+            self._log.info("collector.ctrader.reconnecting")
+            self._client.reconnect()
+
     def fetch_entity(self, entity_name: str, **kwargs) -> list[dict]:
+        self._ensure_connected()
         c = self._client
         now_ms = int(time.time() * 1000)
         from_ms = kwargs.get("from_ms", now_ms - 86400 * 1000)
@@ -246,7 +261,7 @@ class CTraderCollector(BaseCollector):
         results = []
         cursor = from_ms
         while True:
-            inner = encode_int64(2, cursor) + encode_int64(3, to_ms)
+            inner = encode_int64(3, cursor) + encode_int64(4, to_ms)
             fields = self._client.request(PT["DEAL_LIST_REQ"], PT["DEAL_LIST_RES"], inner)
             deals = fields.get(2, [])
             for item in deals:
@@ -265,7 +280,7 @@ class CTraderCollector(BaseCollector):
         return results
 
     def _fetch_open_positions(self, from_ms: int, to_ms: int) -> list[dict]:
-        inner = encode_int64(2, from_ms) + encode_int64(3, to_ms)
+        inner = encode_int64(3, from_ms) + encode_int64(4, to_ms)
         fields = self._client.request(PT["POSITION_LIST_REQ"], PT["POSITION_LIST_RES"], inner)
         items = fields.get(3, [])
         results = []
@@ -287,7 +302,7 @@ class CTraderCollector(BaseCollector):
         return results
 
     def _fetch_pending_orders(self, from_ms: int, to_ms: int) -> list[dict]:
-        inner = encode_int64(2, from_ms) + encode_int64(3, to_ms)
+        inner = encode_int64(3, from_ms) + encode_int64(4, to_ms)
         fields = self._client.request(PT["PENDING_ORDER_LIST_REQ"], PT["PENDING_ORDER_LIST_RES"], inner)
         items = fields.get(3, [])
         return [fields_to_dict(parse_message(item)) if isinstance(item, bytes) else item
@@ -389,6 +404,20 @@ def _get_nested(data: dict, *keys) -> Any:
     return cur
 
 
+def _to_sint64(val) -> int | None:
+    """Convert protobuf uint64 varint to Python signed int64.
+
+    Protobuf encodes negative int64 as large unsigned varints (two's complement).
+    Values >= 2^63 are negative; subtract 2^64 to get the signed value.
+    PostgreSQL bigint max is 2^63 - 1, so uncorverted values cause 'out of range'.
+    """
+    if val is None:
+        return None
+    if isinstance(val, int) and val >= (1 << 63):
+        return val - (1 << 64)
+    return val
+
+
 def _ms_to_dt(ts_ms) -> datetime | None:
     if ts_ms is None:
         return None
@@ -441,11 +470,11 @@ def _extract_ctrader_fields(entity_name: str, rec: dict) -> dict:
             "trade_side":        rec.get("13"),
             "deal_status":       rec.get("14"),
             "deal_type":         rec.get("15"),
-            "commission":        rec.get("17"),
+            "commission":        _to_sint64(rec.get("17")),
             "book_type":         rec.get("19"),
             "lp_execution_price": rec.get("20"),
             "money_digits":      rec.get("58"),
-            "equity_cents":      rec.get("57"),
+            "equity_cents":      _to_sint64(rec.get("57")),
             "source_timestamp":  _ms_to_dt(rec.get("8")),
         }
 
@@ -453,20 +482,20 @@ def _extract_ctrader_fields(entity_name: str, rec: dict) -> dict:
         # ProtoPosition — trade_data is nested in field "3" (ProtoTradeData)
         trade_data = rec.get("3") or {}
         if isinstance(trade_data, bytes):
-            from .manager_client import parse_message, fields_to_dict
+            from manager_client import parse_message, fields_to_dict
             trade_data = fields_to_dict(parse_message(trade_data))
         pos_status = 1 if rec.get("_position_status") == "open" else 2
         return {
             "position_id":       rec.get("1"),
             "position_status":   pos_status,
-            "swap_cents":        rec.get("5"),
+            "swap_cents":        _to_sint64(rec.get("5")),
             "price":             rec.get("6"),
             "stop_loss":         rec.get("7"),
             "take_profit":       rec.get("8"),
-            "commission_cents":  rec.get("13"),
+            "commission_cents":  _to_sint64(rec.get("13")),
             "book_type":         rec.get("11"),
             "money_digits":      rec.get("30"),
-            "used_margin_cents": rec.get("23"),
+            "used_margin_cents": _to_sint64(rec.get("23")),
             "symbol_id":         _get_nested(trade_data, "1"),
             "volume":            _get_nested(trade_data, "2"),
             "trade_side":        _get_nested(trade_data, "3"),
@@ -480,7 +509,7 @@ def _extract_ctrader_fields(entity_name: str, rec: dict) -> dict:
         # ProtoOrder — trade_data in field "2" (ProtoTradeData)
         trade_data = rec.get("2") or {}
         if isinstance(trade_data, bytes):
-            from .manager_client import parse_message, fields_to_dict
+            from manager_client import parse_message, fields_to_dict
             trade_data = fields_to_dict(parse_message(trade_data))
         return {
             "order_id":          rec.get("1"),
@@ -493,7 +522,7 @@ def _extract_ctrader_fields(entity_name: str, rec: dict) -> dict:
             "take_profit":       rec.get("12"),
             "limit_price":       rec.get("21"),
             "stop_price":        rec.get("22"),
-            "commission_cents":  rec.get("24"),
+            "commission_cents":  _to_sint64(rec.get("24")),
             "time_in_force":     rec.get("26"),
             "position_id":       rec.get("30"),
             "book_type":         rec.get("14"),

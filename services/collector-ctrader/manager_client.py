@@ -73,7 +73,15 @@ def encode_bytes(field_num: int, value: bytes) -> bytes:
 
 
 def parse_message(data: bytes) -> dict:
-    """Parse protobuf bytes into {field_number: [values]}."""
+    """Parse protobuf bytes into {field_number: [values]}.
+
+    Wire types:
+        0 = varint   → int
+        1 = 64-bit   → float (double) via struct.unpack('<d')
+        2 = LEN      → bytes (nested message, string, or packed)
+        5 = 32-bit   → float via struct.unpack('<f')
+    """
+    import struct as _struct
     fields: dict[int, list] = {}
     pos = 0
     while pos < len(data):
@@ -88,10 +96,20 @@ def parse_message(data: bytes) -> dict:
             val = data[pos:pos + length]; pos += length
             fields.setdefault(field_num, []).append(val)
         elif wire_type == 1:
-            val = data[pos:pos + 8]; pos += 8
+            # 64-bit fixed — decode as double (covers all double fields in cTrader API)
+            raw = data[pos:pos + 8]; pos += 8
+            try:
+                val = _struct.unpack('<d', raw)[0]
+            except Exception:
+                val = raw
             fields.setdefault(field_num, []).append(val)
         elif wire_type == 5:
-            val = data[pos:pos + 4]; pos += 4
+            # 32-bit fixed — decode as float
+            raw = data[pos:pos + 4]; pos += 4
+            try:
+                val = _struct.unpack('<f', raw)[0]
+            except Exception:
+                val = raw
             fields.setdefault(field_num, []).append(val)
         else:
             break
@@ -280,12 +298,13 @@ class ManagerAPIClient:
         fields = parse_message(payload)
 
         # Send MANAGER_AUTH_REQ
-        pwd_hash = hashlib.md5(self.password.encode()).hexdigest()
+        # Field numbers per Spotware Manager API: 2=plantId, 3=envName, 4=login, 5=hashedPassword
+        pwd_hash = hashlib.md5(self.password.encode("ascii")).hexdigest()
         inner = (
-            encode_string(1, self.plant_id) +
-            encode_string(2, self.env_name) +
-            encode_int64(3, self.login) +
-            encode_string(4, pwd_hash)
+            encode_string(2, self.plant_id) +
+            encode_string(3, self.env_name) +
+            encode_int64(4, self.login) +
+            encode_string(5, pwd_hash)
         )
         msg_id = self._next_id()
         self._send(_proto_wrap(PT["MANAGER_AUTH_REQ"], inner, msg_id))
@@ -304,6 +323,11 @@ class ManagerAPIClient:
             raise ConnectionError(f"Unexpected response during auth: {pt}")
 
         log.info("ctrader.client.authenticated", host=self.host, login=self.login)
+
+    def reconnect(self) -> None:
+        """Close and re-establish the connection + authentication."""
+        self.close()
+        self.connect()
 
     def request(
         self,
