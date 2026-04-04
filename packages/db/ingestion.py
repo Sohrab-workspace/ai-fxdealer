@@ -61,8 +61,9 @@ def save_raw_records(
             for row in rows:
                 # Supersede any existing active record
                 if dedup_columns:
+                    # Quote column names to handle reserved SQL keywords (group, time, type, …)
                     where_clauses = " AND ".join(
-                        f"{col} = :{col}" for col in dedup_columns if col in row
+                        f'"{col}" = :{col}' for col in dedup_columns if col in row
                     )
                     if where_clauses:
                         params = {col: row[col] for col in dedup_columns if col in row}
@@ -79,9 +80,10 @@ def save_raw_records(
                             params,
                         )
 
-                # Build INSERT with only columns present in the row
+                # Build INSERT with only columns present in the row.
+                # Quote column names to handle reserved SQL keywords (group, time, type, …)
                 cols = list(row.keys())
-                col_names = ", ".join(cols)
+                col_names = ", ".join(f'"{col}"' for col in cols)
                 placeholders = ", ".join(f":{col}" for col in cols)
                 insert_params = {}
                 for col in cols:

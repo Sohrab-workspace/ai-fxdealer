@@ -28,7 +28,7 @@ def upgrade() -> None:
         "raw_mt5_ticks",
 
         # Platform / tenant
-        sa.Column("id", postgresql.UUID(as_uuid=True), primary_key=True),
+        sa.Column("id", postgresql.UUID(as_uuid=True), nullable=False),
         sa.Column("broker_id", postgresql.UUID(as_uuid=True), nullable=False),
         sa.Column("server_id", postgresql.UUID(as_uuid=True), nullable=True),
 

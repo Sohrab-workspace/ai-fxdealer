@@ -27,7 +27,7 @@ def upgrade() -> None:
     op.create_table(
         "raw_collector_errors",
 
-        sa.Column("id", postgresql.UUID(as_uuid=True), primary_key=True),
+        sa.Column("id", postgresql.UUID(as_uuid=True), nullable=False),
         sa.Column("broker_id", postgresql.UUID(as_uuid=True), nullable=False),
         sa.Column("source_system", sa.String(), nullable=False),   # mt4|mt5|ctrader|fxbo|bridge|lp|news|calendar
         sa.Column("connection_id", postgresql.UUID(as_uuid=True), nullable=True),

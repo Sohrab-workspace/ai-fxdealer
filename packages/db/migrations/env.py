@@ -16,6 +16,16 @@ Usage:
 """
 
 import os
+import sys
+from pathlib import Path
+
+# Add packages/ dir to sys.path so `from db.models import Base` resolves.
+# Use append (not insert) so Python's stdlib takes priority over packages/queue,
+# which would otherwise shadow the built-in 'queue' module.
+_packages_dir = str(Path(__file__).resolve().parent.parent.parent)
+if _packages_dir not in sys.path:
+    sys.path.append(_packages_dir)
+
 from logging.config import fileConfig
 
 from sqlalchemy import engine_from_config, pool

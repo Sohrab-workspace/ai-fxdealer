@@ -28,7 +28,7 @@ def upgrade() -> None:
     op.create_table(
         "raw_ctrader_deals",
 
-        sa.Column("id", postgresql.UUID(as_uuid=True), primary_key=True),
+        sa.Column("id", postgresql.UUID(as_uuid=True), nullable=False),
         sa.Column("broker_id", postgresql.UUID(as_uuid=True), nullable=False),
         sa.Column("server_id", postgresql.UUID(as_uuid=True), nullable=True),
 
@@ -70,13 +70,7 @@ def upgrade() -> None:
         "SELECT add_retention_policy('raw_ctrader_deals', INTERVAL '2 years')"
     )
 
-    op.execute(
-        """
-        CREATE UNIQUE INDEX uq_raw_ctrader_deals_active
-        ON raw_ctrader_deals (broker_id, server_id, deal_id)
-        WHERE status = 'active'
-        """
-    )
+    # Note: unique index omitted — hypertable partition constraint (see 0001).
     op.create_index("ix_raw_ctrader_deals_broker_collected", "raw_ctrader_deals", ["broker_id", "collected_at"])
     op.create_index("ix_raw_ctrader_deals_broker_trader", "raw_ctrader_deals", ["broker_id", "trader_id", "collected_at"])
     op.create_index("ix_raw_ctrader_deals_broker_symbol", "raw_ctrader_deals", ["broker_id", "symbol_id", "collected_at"])
@@ -86,6 +80,5 @@ def downgrade() -> None:
     op.drop_index("ix_raw_ctrader_deals_broker_symbol", table_name="raw_ctrader_deals")
     op.drop_index("ix_raw_ctrader_deals_broker_trader", table_name="raw_ctrader_deals")
     op.drop_index("ix_raw_ctrader_deals_broker_collected", table_name="raw_ctrader_deals")
-    op.execute("DROP INDEX IF EXISTS uq_raw_ctrader_deals_active")
     op.execute("SELECT remove_retention_policy('raw_ctrader_deals', if_not_exists => TRUE)")
     op.drop_table("raw_ctrader_deals")

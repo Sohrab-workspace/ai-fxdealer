@@ -25,7 +25,7 @@ import structlog
 from shared.base_collector import BaseCollector
 from db.ingestion import save_raw_records, log_collector_run, log_collector_error
 
-from .ctypes_wrapper import MT4Manager, unpack_ip
+from ctypes_wrapper import MT4Manager, unpack_ip
 
 log = structlog.get_logger()
 
@@ -207,12 +207,7 @@ class MT4Collector(BaseCollector):
             return m.get_symbols()
 
         elif entity_name == "online":
-            records = m.get_online()
-            # Unpack IP from packed uint32
-            for rec in records:
-                if "ip" in rec and isinstance(rec["ip"], int):
-                    rec["ip_str"] = unpack_ip(rec["ip"])
-            return records
+            return m.get_online()
 
         elif entity_name == "margin":
             return m.get_margin_levels()
@@ -322,47 +317,73 @@ def _unix_s_to_dt(ts) -> datetime | None:
 
 def _extract_mt4_fields(entity_name: str, rec: dict) -> dict:
     if entity_name == "accounts":
+        # raw_mt4_accounts: group_name (not group), regdate/lastdate as BigInteger
         return {
             "login":            rec.get("login"),
-            "group":            rec.get("group"),
+            "group_name":       rec.get("group"),       # schema column is group_name
             "name":             rec.get("name"),
-            "email":            rec.get("email"),
+            "country":          rec.get("country"),
+            "city":             rec.get("city"),
+            "enable":           rec.get("enable"),
+            "leverage":         rec.get("leverage"),
             "balance":          rec.get("balance"),
             "credit":           rec.get("credit"),
-            "leverage":         rec.get("leverage"),
-            "regdate":          _unix_s_to_dt(rec.get("regdate")),
-            "lastdate":         _unix_s_to_dt(rec.get("lastdate")),
-            "agent_account":    rec.get("agent_account"),
-            "country":          rec.get("country"),
-            "enable":           rec.get("enable"),
+            "regdate":          rec.get("regdate"),     # BigInteger (unix s)
+            "lastdate":         rec.get("lastdate"),    # BigInteger (unix s)
             "source_timestamp": _unix_s_to_dt(rec.get("regdate")),
         }
 
-    elif entity_name in ("orders", "deals"):
-        is_deal = entity_name == "deals"
-        result = {
+    elif entity_name == "orders":
+        # raw_mt4_orders: all timestamps as BigInteger
+        return {
             "order_id":         rec.get("order"),
             "login":            rec.get("login"),
             "symbol":           rec.get("symbol"),
             "cmd":              rec.get("cmd"),
             "volume":           rec.get("volume"),
-            "open_time":        _unix_s_to_dt(rec.get("open_time")),
+            "open_time":        rec.get("open_time"),   # BigInteger (unix s)
+            "state":            rec.get("state"),
             "open_price":       rec.get("open_price"),
             "sl":               rec.get("sl"),
             "tp":               rec.get("tp"),
+            "close_price":      rec.get("close_price"), # current market price for open orders
+            "profit":           rec.get("profit"),
             "commission":       rec.get("commission"),
             "storage":          rec.get("storage"),
-            "profit":           rec.get("profit"),
-            "comment":          rec.get("comment"),
             "magic":            rec.get("magic"),
+            "expiration":       rec.get("expiration"),  # BigInteger (unix s, 0=GTC)
+            "timestamp":        rec.get("timestamp"),   # BigInteger (unix s)
             "source_timestamp": _unix_s_to_dt(rec.get("open_time")),
         }
-        if is_deal:
-            result["close_time"] = _unix_s_to_dt(rec.get("close_time"))
-            result["close_price"] = rec.get("close_price")
-            result["reason"] = rec.get("reason")
-            result["source_timestamp"] = _unix_s_to_dt(rec.get("close_time"))
-        return result
+
+    elif entity_name == "deals":
+        # raw_mt4_deals: all timestamps as BigInteger; reason mapped to int
+        raw_reason = rec.get("reason")
+        reason_int: int | None = None
+        if isinstance(raw_reason, int):
+            reason_int = raw_reason
+        elif isinstance(raw_reason, (str, bytes)) and raw_reason:
+            b = raw_reason if isinstance(raw_reason, bytes) else raw_reason.encode("latin-1", errors="replace")
+            reason_int = b[0] if b else None
+        return {
+            "order_id":         rec.get("order"),
+            "login":            rec.get("login"),
+            "symbol":           rec.get("symbol"),
+            "cmd":              rec.get("cmd"),
+            "volume":           rec.get("volume"),
+            "open_time":        rec.get("open_time"),   # BigInteger (unix s)
+            "close_time":       rec.get("close_time"),  # BigInteger (unix s) — always > 0 for deals
+            "state":            rec.get("state"),
+            "open_price":       rec.get("open_price"),
+            "close_price":      rec.get("close_price"),
+            "profit":           rec.get("profit"),
+            "commission":       rec.get("commission"),
+            "storage":          rec.get("storage"),
+            "magic":            rec.get("magic"),
+            "reason":           reason_int,
+            "timestamp":        rec.get("timestamp"),   # BigInteger (unix s)
+            "source_timestamp": _unix_s_to_dt(rec.get("close_time")),
+        }
 
     elif entity_name == "symbols":
         return {
@@ -379,27 +400,26 @@ def _extract_mt4_fields(entity_name: str, rec: dict) -> dict:
         }
 
     elif entity_name == "online":
+        # raw_mt4_online: actual OnlineRecord fields are counter, reserved, login, ip, group
+        # Schema columns: login, group_name, ip (BigInt)
         return {
-            "login":    rec.get("login"),
-            "ip":       rec.get("ip"),
-            "ip_str":   rec.get("ip_str"),
-            "lastlogin": _unix_s_to_dt(rec.get("lastlogin")),
-            "build":    rec.get("build"),
+            "login":            rec.get("login"),
+            "group_name":       rec.get("group"),        # schema: group_name
+            "ip":               rec.get("ip"),           # packed uint32 as BigInteger
         }
 
     elif entity_name == "margin":
+        # raw_mt4_margin: group_name (not group), profit_loss (not profit)
         return {
-            "login":        rec.get("login"),
-            "group":        rec.get("group"),
-            "balance":      rec.get("balance"),
-            "equity":       rec.get("equity"),
-            "margin":       rec.get("margin"),
-            "margin_free":  rec.get("margin_free"),
-            "margin_level": rec.get("margin_level"),
-            "profit":       rec.get("profit"),
-            "floating":     rec.get("floating"),
-            "credit":       rec.get("credit"),
-            "orders":       rec.get("orders"),
+            "login":              rec.get("login"),
+            "group_name":         rec.get("group"),      # schema: group_name
+            "balance":            rec.get("balance"),
+            "equity":             rec.get("equity"),
+            "margin":             rec.get("margin"),
+            "margin_free":        rec.get("margin_free"),
+            "margin_level":       rec.get("margin_level"),
+            "floating":           rec.get("floating"),
+            "profit_loss":        rec.get("profit"),     # schema: profit_loss
         }
 
     elif entity_name == "summary":

@@ -26,7 +26,7 @@ def upgrade() -> None:
         "raw_mt5_deals",
 
         # Platform / tenant
-        sa.Column("id", postgresql.UUID(as_uuid=True), primary_key=True),
+        sa.Column("id", postgresql.UUID(as_uuid=True), nullable=False),
         sa.Column("broker_id", postgresql.UUID(as_uuid=True), nullable=False),
         sa.Column("server_id", postgresql.UUID(as_uuid=True), nullable=True),
 
@@ -93,15 +93,9 @@ def upgrade() -> None:
         ["broker_id", "symbol", sa.text("collected_at DESC")],
     )
 
-    # Partial unique index — one active record per (broker, server, deal ticket)
-    # Re-syncs and corrections create superseded records instead of replacing
-    op.execute(
-        """
-        CREATE UNIQUE INDEX uq_raw_mt5_deals_active
-        ON raw_mt5_deals (broker_id, server_id, deal_id)
-        WHERE status = 'active'
-        """
-    )
+    # Note: unique index omitted — TimescaleDB hypertables require the partition
+    # column (collected_at) in any unique index, which would defeat its purpose.
+    # Dedup is handled at the application layer in save_raw_records (supersede pattern).
 
     # TimescaleDB retention policy — 2 years
     # Matches CLAUDE.md retention table: "Raw deals, orders, positions → 2 years"
@@ -112,7 +106,6 @@ def downgrade() -> None:
     op.execute(
         "SELECT remove_retention_policy('raw_mt5_deals', if_exists => true)"
     )
-    op.execute("DROP INDEX IF EXISTS uq_raw_mt5_deals_active")
     op.drop_index("ix_raw_mt5_deals_broker_symbol_collected", table_name="raw_mt5_deals")
     op.drop_index("ix_raw_mt5_deals_broker_login_collected", table_name="raw_mt5_deals")
     op.drop_index("ix_raw_mt5_deals_broker_collected", table_name="raw_mt5_deals")

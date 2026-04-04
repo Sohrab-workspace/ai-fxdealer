@@ -11,11 +11,16 @@ Key MT4 structural facts:
 - TradeRecord covers BOTH open orders (close_time=0) and closed deals (close_time>0)
 - All struct fields use lowercase names (C/ctypes convention)
 
-DLL factory pattern:
-    manager = MT4Manager.create(dll_path, server, login, password)
-    manager.connect()
-    users = manager.get_users_by_group("*")
-    manager.disconnect()
+DLL factory pattern (corrected — CManagerFactory is NOT a DLL export):
+    DLL exports exactly two C functions:
+      MtManVersion() → int
+      MtManCreate(int version, CManagerInterface**) → int
+
+    MT4Manager wraps these two C functions directly:
+      manager = MT4Manager.create(dll_path, server, login, password)
+      manager.connect()
+      users = manager.get_users_by_group("*")
+      manager.disconnect()
 
 Reference: .claude/references/mql4/ManagerAPI/
 """
@@ -27,8 +32,9 @@ import struct
 from ctypes import (
     CDLL, Structure, POINTER,
     c_int, c_uint, c_double, c_float, c_char, c_char_p,
-    c_long, c_ulong, c_longlong, c_ulonglong, c_bool,
-    byref, cast,
+    c_short, c_ushort,
+    c_long, c_ulong, c_longlong, c_ulonglong, c_bool, c_void_p,
+    byref, cast, CFUNCTYPE,
 )
 from datetime import datetime, timezone
 from typing import Any
@@ -37,169 +43,176 @@ import structlog
 
 log = structlog.get_logger()
 
+# ── DLL version constant ───────────────────────────────────────────────────────
+# MAKELONG(ManAPIProgramBuild=1440, ManAPIProgramVersion=400)
+# = (ManAPIProgramVersion << 16) | ManAPIProgramBuild
+# = (400 << 16) | 1440 = 26215840
+_MAN_API_VERSION = (400 << 16) | 1440  # 26215840
+
+# MT4 return code for success
+_RET_OK = 0
+
 # ── ctypes structures matching MT4ManagerAPI.h ─────────────────────────────────
 
 MT4_MAX_STRING = 64
 
 
 class UserRecord(Structure):
-    """MT4 UserRecord — account record (28 fields from MT4ManagerAPI.h)."""
+    """
+    MT4 UserRecord — account record (MT4ManagerAPI.h).
+    Default packing (no #pragma pack around this struct).
+    Size = 1120 bytes (includes 4-byte alignment pad before balance).
+
+    Field sizes verified against MT4ManagerAPI.h lines 924-976.
+    """
     _fields_ = [
-        ("login",           c_int),          # account login
-        ("group",           c_char * MT4_MAX_STRING),
-        ("password",        c_char * MT4_MAX_STRING),
-        ("enable",          c_int),          # 0=disabled, 1=enabled
+        ("login",                  c_int),          # account login
+        ("group",                  c_char * 16),    # group name
+        ("password",               c_char * 16),    # password hash
+        ("enable",                 c_int),          # 0=disabled, 1=enabled
         ("enable_change_password", c_int),
-        ("read_only",       c_int),
-        ("enable_otp",      c_int),
-        ("password_phone",  c_char * MT4_MAX_STRING),
-        ("name",            c_char * 128),
-        ("country",         c_char * MT4_MAX_STRING),
-        ("city",            c_char * MT4_MAX_STRING),
-        ("state",           c_char * MT4_MAX_STRING),
-        ("zipcode",         c_char * MT4_MAX_STRING),
-        ("address",         c_char * 128),
-        ("phone",           c_char * MT4_MAX_STRING),
-        ("email",           c_char * MT4_MAX_STRING),
-        ("comment",         c_char * 64),
-        ("id",              c_char * MT4_MAX_STRING),  # national ID / doc
-        ("status",          c_char * MT4_MAX_STRING),
-        ("regdate",         c_int),          # registration date (unix s)
-        ("lastdate",        c_int),          # last login date (unix s)
-        ("leverage",        c_int),          # leverage (e.g. 100 = 1:100)
-        ("agent_account",   c_int),          # agent / IB account login
-        ("timestamp",       c_int),          # last account update (unix s)
-        ("balance",         c_double),       # account balance
-        ("prevmonthbalance", c_double),
-        ("prevbalance",     c_double),
-        ("credit",          c_double),       # credit
-        ("interestrate",    c_double),
-        ("taxes",           c_double),
-        ("prevmonthequity", c_double),
-        ("prevequity",      c_double),
-        ("reserved",        c_double * 2),
-        ("publickey",       c_char * 270),
-        ("reserved2",       c_int * 2),
+        ("enable_read_only",       c_int),          # TRUE = may not trade
+        ("enable_otp",             c_int),
+        ("enable_reserved",        c_int * 2),      # for future use
+        ("password_investor",      c_char * 16),    # read-only password
+        ("password_phone",         c_char * 32),    # phone password
+        ("name",                   c_char * 128),   # client name
+        ("country",                c_char * 32),
+        ("city",                   c_char * 32),
+        ("state",                  c_char * 32),
+        ("zipcode",                c_char * 16),
+        ("address",                c_char * 96),
+        ("lead_source",            c_char * 32),
+        ("phone",                  c_char * 32),
+        ("email",                  c_char * 48),
+        ("comment",                c_char * 64),
+        ("id",                     c_char * 32),    # SSN / national ID
+        ("status",                 c_char * 16),
+        ("regdate",                c_int),          # registration unix timestamp
+        ("lastdate",               c_int),          # last connection unix timestamp
+        ("leverage",               c_int),          # leverage (e.g. 100 = 1:100)
+        ("agent_account",          c_int),          # agent / IB login
+        ("timestamp",              c_int),          # last update unix timestamp
+        ("last_ip",                c_int),          # last connection IP (packed int)
+        # NOTE: ctypes auto-inserts 4-byte pad here for double alignment (default packing)
+        ("balance",                c_double),
+        ("prevmonthbalance",       c_double),
+        ("prevbalance",            c_double),
+        ("credit",                 c_double),
+        ("interestrate",           c_double),
+        ("taxes",                  c_double),
+        ("prevmonthequity",        c_double),
+        ("prevequity",             c_double),
+        ("reserved2",              c_double * 2),
+        ("otp_secret",             c_char * 32),
+        ("secure_reserved",        c_char * 240),
+        ("send_reports",           c_int),
+        ("mqid",                   c_uint),         # MQ client ID
+        ("user_color",             c_uint),         # COLORREF display color
+        ("unused",                 c_char * 40),
+        ("api_data",               c_char * 16),
     ]
 
 
 class TradeRecord(Structure):
     """
     MT4 TradeRecord — used for BOTH open orders and closed deals.
+    #pragma pack(push,1) — NO alignment padding.
+    Size = 224 bytes.
+
+    Field layout verified against MT4ManagerAPI.h lines 1015-1051.
 
     Discriminator:
         close_time == 0   → open order (raw_mt4_orders)
         close_time >  0   → closed deal (raw_mt4_deals)
     """
-    _fields_ = [
-        ("order",        c_int),     # order/deal ticket
-        ("login",        c_int),     # account login
-        ("symbol",       c_char * 12),
-        ("digits",       c_int),     # price decimal digits
-        ("cmd",          c_int),     # order type (0=buy, 1=sell, 2=buy_limit, ...)
-        ("volume",       c_int),     # volume in lots×100
-        ("open_time",    c_int),     # open time unix s
-        ("state",        c_int),     # order state
-        ("open_price",   c_double),
-        ("sl",           c_double),  # stop loss
-        ("tp",           c_double),  # take profit
-        ("close_time",   c_int),     # 0=open, >0=closed (unix s)
-        ("value_date",   c_int),
-        ("expiration",   c_int),     # expiry time (unix s, 0=no expiry)
-        ("reason",       c_char),    # close reason
-        ("reserved",     c_char * 3),
-        ("conv_rate1",   c_double),
-        ("conv_rate2",   c_double),
-        ("commission",   c_double),
-        ("commission_agent", c_double),
-        ("storage",      c_double),  # swap
-        ("close_price",  c_double),
-        ("profit",       c_double),  # floating or realised P&L
-        ("taxes",        c_double),
-        ("magic",        c_int),     # expert advisor ID
-        ("comment",      c_char * 32),
-        ("activation",   c_int),
-        ("gw_volume",    c_int),
-        ("gw_open_price", c_double),
-        ("gw_close_price", c_double),
-        ("margin_rate",  c_double),
-        ("timestamp",    c_int),     # last modification unix s
-        ("internal_id",  c_uint),
-        ("reserved2",    c_int * 2),
-    ]
+    _pack_ = 1   # matches #pragma pack(push,1) in MT4ManagerAPI.h
 
-
-class SymbolInfo(Structure):
-    """MT4 SymbolInfo — key fields only."""
     _fields_ = [
-        ("symbol",        c_char * 12),
-        ("description",   c_char * 64),
-        ("source",        c_char * 12),
-        ("currency_base", c_char * 12),
-        ("currency_profit", c_char * 12),
-        ("currency_margin", c_char * 12),
-        ("digits",        c_int),
-        ("type",          c_int),
-        ("spread",        c_int),
-        ("spread_balance", c_int),
-        ("direction",     c_int),
-        ("gt_c",          c_int),
-        ("gt_n",          c_int),
-        ("gt_u",          c_int),
-        ("ses_recalc",    c_int),
-        ("ses_recalc_n",  c_int),
-        ("profit_mode",   c_int),
-        ("filter",        c_int),
-        ("filter_counter",c_int),
-        ("filter_limit",  c_double),
-        ("filter_smoothing", c_int),
-        ("filter_pipe",   c_int),
-        ("ask",           c_double),
-        ("bid",           c_double),
-        ("last",          c_double),
-        ("point",         c_double),
-        ("multiply",      c_double),
-        ("bid_tickvalue", c_double),
-        ("ask_tickvalue", c_double),
-        ("long_rates",    c_double),
-        ("short_rates",   c_double),
-        ("margin_mode",   c_int),
-        ("margin_initial", c_double),
-        ("margin_maintenance", c_double),
-        ("margin_hedged", c_double),
-        ("margin_divider", c_double),
-        ("contract_size", c_double),
-        ("tick_size",     c_double),
-        ("tick_value",    c_double),
-        ("stops_level",   c_int),
-        ("gtc_mode",      c_int),
+        ("order",             c_int),     # order/deal ticket
+        ("login",             c_int),     # account login
+        ("symbol",            c_char * 12),
+        ("digits",            c_int),     # price decimal digits
+        ("cmd",               c_int),     # OP_BUY=0, OP_SELL=1, ..., OP_BALANCE=6
+        ("volume",            c_int),     # volume in lots×100
+        ("open_time",         c_int),     # open time unix s (__time32_t)
+        ("state",             c_int),     # TS_OPEN_NORMAL etc.
+        ("open_price",        c_double),  # no alignment pad (pack=1)
+        ("sl",                c_double),  # stop loss
+        ("tp",                c_double),  # take profit
+        ("close_time",        c_int),     # 0=open, >0=closed (unix s)
+        ("gw_volume",         c_int),     # gateway order volume
+        ("expiration",        c_int),     # pending expiry unix s (0=GTC)
+        ("reason",            c_char),    # TR_REASON_CLIENT=0, TR_REASON_DEALER=2, ...
+        ("conv_reserv",       c_char * 3),
+        ("conv_rates",        c_double * 2),  # profit→deposit rate at open/close
+        ("commission",        c_double),
+        ("commission_agent",  c_double),
+        ("storage",           c_double),  # accrued swap
+        ("close_price",       c_double),
+        ("profit",            c_double),  # floating or realised P&L
+        ("taxes",             c_double),
+        ("magic",             c_int),     # EA magic number
+        ("comment",           c_char * 32),
+        ("gw_order",          c_int),     # gateway order ticket
+        ("activation",        c_int),
+        ("gw_open_price",     c_short),   # gateway price deviation pips (short!)
+        ("gw_close_price",    c_short),   # gateway price deviation pips (short!)
+        ("margin_rate",       c_double),  # margin currency → deposit currency rate
+        ("timestamp",         c_int),     # last modification unix s
+        ("api_data",          c_int * 4), # for API usage
+        ("next",              c_uint),    # __ptr32 internal linked list (32-bit ptr)
     ]
 
 
 class OnlineRecord(Structure):
-    """MT4 OnlineRecord — active session."""
+    """
+    MT4 OnlineRecord — active connected session.
+    Default packing (no #pragma pack around this struct).
+    Size = 32 bytes.
+
+    Field layout verified against MT4ManagerAPI.h lines 1001-1008.
+    """
     _fields_ = [
-        ("login",     c_int),
-        ("ip",        c_uint),    # packed uint32 big-endian
-        ("lastlogin", c_int),     # session start unix s
-        ("build",     c_int),
+        ("counter",   c_int),    # connections counter
+        ("reserved",  c_int),    # reserved
+        ("login",     c_int),    # user login
+        ("ip",        c_uint),   # connection IP address (packed uint32)
+        ("group",     c_char * 16),  # user group
+    ]
+
+
+class ReportGroupRequest(Structure):
+    """
+    MT4 ReportGroupRequest — used with ReportsRequest batch history fetch.
+    #pragma pack(push,1) — NO alignment padding.
+    Size = 44 bytes.
+
+    Field layout verified against MT4ManagerAPI.h lines 1243-1250.
+    """
+    _pack_ = 1
+    _fields_ = [
+        ("name",    c_char * 32),  # request group name (can be empty)
+        ("from_ts", c_int),        # from __time32_t
+        ("to_ts",   c_int),        # to   __time32_t
+        ("total",   c_int),        # count of logins in the logins array
     ]
 
 
 class MarginLevel(Structure):
     """MT4 MarginLevel — account margin snapshot."""
     _fields_ = [
-        ("login",      c_int),
-        ("group",      c_char * MT4_MAX_STRING),
-        ("balance",    c_double),
-        ("equity",     c_double),
-        ("margin",     c_double),
-        ("margin_free", c_double),
+        ("login",        c_int),
+        ("group",        c_char * MT4_MAX_STRING),
+        ("balance",      c_double),
+        ("equity",       c_double),
+        ("margin",       c_double),
+        ("margin_free",  c_double),
         ("margin_level", c_double),
-        ("profit",     c_double),
-        ("floating",   c_double),
-        ("credit",     c_double),
-        ("orders",     c_int),
+        ("profit",       c_double),
+        ("floating",     c_double),
+        ("credit",       c_double),
+        ("orders",       c_int),
     ]
 
 
@@ -228,7 +241,9 @@ def struct_to_dict(obj) -> dict:
         if isinstance(val, bytes):
             val = val.rstrip(b"\x00").decode("utf-8", errors="replace")
         elif hasattr(val, "_type_"):
-            # Array type — convert to list
+            # Array type — skip reserved fields, convert others
+            if "reserved" in field_name:
+                continue
             val = list(val)
         result[field_name] = val
     return result
@@ -242,6 +257,45 @@ def unpack_ip(packed: int) -> str:
         return ""
 
 
+# ── Vtable call helper ─────────────────────────────────────────────────────────
+
+def _call_vtfn(manager_ptr_val: int, idx: int, restype, argtypes: list, *args):
+    """
+    Call a virtual method on a C++ object via its vtable.
+
+    manager_ptr_val: raw integer value of the CManagerInterface* pointer
+    idx:             vtable index (0-based) from MT4ManagerAPI.h virtual method order
+    restype:         ctypes return type
+    argtypes:        list of ctypes argument types (excluding `this`)
+    *args:           actual arguments (excluding `this`)
+
+    The C++ vtable layout:
+        *(void**)manager_ptr_val  → vtable pointer
+        vtable[idx]               → function pointer for method #idx
+    In 64-bit Windows, `this` is passed as the first argument (rcx register).
+    """
+    # Get vtable pointer: *((void**)manager_ptr_val)
+    vtable_ptr = cast(manager_ptr_val, POINTER(c_void_p)).contents.value
+    # Get function pointer from vtable[idx]
+    fn_ptr = cast(vtable_ptr, POINTER(c_void_p))[idx]
+    # Build function type with `this` as first arg (c_void_p)
+    fn_type = CFUNCTYPE(restype, c_void_p, *argtypes)
+    fn = fn_type(fn_ptr)
+    return fn(manager_ptr_val, *args)
+
+
+# ── Vtable indices from MT4ManagerAPI.h (0-based, virtual method order) ────────
+_VT_MEMFREE                = 3
+_VT_CONNECT                = 6
+_VT_DISCONNECT             = 7
+_VT_LOGIN                  = 9
+_VT_ADM_USERS_REQ          = 79   # AdmUsersRequest(group, &total) → UserRecord*
+_VT_ADM_TRADES_REQ         = 80   # AdmTradesRequest(group, open_only, &total) → TradeRecord*
+_VT_ONLINE_REQ             = 104  # OnlineRequest(&total) → OnlineRecord*
+_VT_TRADES_USER_HISTORY    = 108  # TradesUserHistory(login, from, to, &total) → TradeRecord*
+_VT_REPORTS_REQUEST        = 110  # ReportsRequest(req*, logins*, &total) → TradeRecord* (batch)
+
+
 # ── MT4Manager facade ─────────────────────────────────────────────────────────
 
 class MT4Manager:
@@ -249,16 +303,18 @@ class MT4Manager:
     High-level MT4 Manager API facade over the DLL.
 
     DLL is loaded on demand from dll_path (per broker configuration).
-    Function signatures match MT4ManagerAPI.h — factory interface pattern.
+    Uses MtManCreate() (a C export from the DLL) to obtain a
+    CManagerInterface* pointer, then calls all virtual methods through
+    the C++ vtable.
     """
 
     def __init__(self, dll_path: str, server: str, login: int, password: str):
-        self.server   = server
-        self.login    = login
-        self.password = password
+        self.server    = server
+        self.login     = login
+        self.password  = password
         self._dll_path = dll_path
-        self._lib = None
-        self._manager = None
+        self._lib: CDLL | None = None
+        self._mgr: int = 0   # raw integer value of CManagerInterface*
 
     @classmethod
     def create(cls, dll_path: str, server: str, login: int, password: str) -> "MT4Manager":
@@ -267,58 +323,262 @@ class MT4Manager:
         return cls(dll_path, server, login, password)
 
     def connect(self) -> None:
+        """Load DLL, create manager interface, connect and login."""
         self._lib = CDLL(self._dll_path)
 
-        # CManagerFactory() → IMTManagerInterface*
-        self._lib.CManagerFactory.restype = ctypes.c_void_p
-        factory = self._lib.CManagerFactory()
-        if not factory:
-            raise RuntimeError("CManagerFactory() returned NULL")
+        # Verify DLL version
+        self._lib.MtManVersion.restype = c_int
+        self._lib.MtManVersion.argtypes = []
+        dll_ver = self._lib.MtManVersion()
+        log.debug("collector.mt4.dll_version", version=dll_ver, expected=_MAN_API_VERSION)
 
-        # factory->Create(MTAPI_NO_FLAGS) → manager
-        create_fn = ctypes.CFUNCTYPE(ctypes.c_void_p, ctypes.c_void_p, ctypes.c_uint)(
-            ctypes.cast(factory, ctypes.POINTER(ctypes.c_void_p * 100)).contents[0]
-        )
-        self._manager = create_fn(factory, 0)
-        if not self._manager:
-            raise RuntimeError("Manager->Create() returned NULL")
+        # MtManCreate(int version, CManagerInterface** manager) → int
+        self._lib.MtManCreate.restype  = c_int
+        self._lib.MtManCreate.argtypes = [c_int, POINTER(c_void_p)]
 
-        # manager->Connect(server, login, password)
-        # Note: exact function pointers depend on DLL version; wrap with error check
+        mgr_ptr = c_void_p()
+        ret = self._lib.MtManCreate(_MAN_API_VERSION, byref(mgr_ptr))
+        # Success is indicated by a non-null manager pointer.
+        # MT4 DLL returns the version code on success (not zero), so
+        # do NOT check ret == 0 — only check that the pointer is valid.
+        if not mgr_ptr.value:
+            raise RuntimeError(
+                f"MtManCreate returned NULL manager pointer (code={ret}). "
+                f"DLL version={dll_ver}, expected={_MAN_API_VERSION}"
+            )
+        log.debug("collector.mt4.mtmancreate_ok", ret=ret, ptr=hex(mgr_ptr.value))
+        self._mgr = mgr_ptr.value
+
+        # CManagerInterface::Connect(LPCSTR server) → int
+        # server format: "host:port"
+        server_str = f"{self.server}"
+        if ":" not in server_str:
+            server_str = server_str  # use as-is; some servers omit port
+        ret = _call_vtfn(self._mgr, _VT_CONNECT, c_int, [c_char_p],
+                         server_str.encode("ascii"))
+        if ret != _RET_OK:
+            raise RuntimeError(f"MT4 Connect failed: code={ret}, server={server_str}")
+
+        # CManagerInterface::Login(int login, LPCSTR password) → int
+        ret = _call_vtfn(self._mgr, _VT_LOGIN, c_int, [c_int, c_char_p],
+                         self.login, self.password.encode("ascii"))
+        if ret != _RET_OK:
+            raise RuntimeError(f"MT4 Login failed: code={ret}, login={self.login}")
+
         log.info("collector.mt4.connected", server=self.server, login=self.login)
 
     def disconnect(self) -> None:
-        # Release manager and factory
+        """Disconnect from server and release manager interface."""
+        if self._mgr:
+            try:
+                _call_vtfn(self._mgr, _VT_DISCONNECT, None, [])
+            except Exception as exc:
+                log.warning("collector.mt4.disconnect_error", error=str(exc))
+            self._mgr = 0
         log.info("collector.mt4.disconnected")
 
+    def _memfree(self, ptr) -> None:
+        """Release memory allocated by the DLL (CManagerInterface::MemFree)."""
+        if ptr:
+            try:
+                _call_vtfn(self._mgr, _VT_MEMFREE, None, [c_void_p],
+                            cast(ptr, c_void_p))
+            except Exception as exc:
+                log.warning("collector.mt4.memfree_error", error=str(exc))
+
+    def _assert_connected(self) -> None:
+        if not self._mgr:
+            raise RuntimeError("MT4Manager not connected. Call connect() first.")
+
+    # ── Data fetch methods ────────────────────────────────────────────────────
+
     def get_users_by_group(self, group: str = "*") -> list[dict]:
-        """Fetch all user records. Returns list of dicts."""
-        # DLL call: manager->UserRecordsRequest(group, &count) → UserRecord*
-        # Fallback: return empty list if DLL interface not yet wired
-        log.warning("collector.mt4.get_users_by_group.not_wired",
-                    msg="DLL function pointers require broker-specific testing")
-        return []
+        """
+        Fetch all user records for the given group mask.
+        Uses AdmUsersRequest (vtable[79]).
+        Returns list of dicts.
+        """
+        self._assert_connected()
+        total = c_int(0)
+        ptr = _call_vtfn(
+            self._mgr, _VT_ADM_USERS_REQ,
+            POINTER(UserRecord),
+            [c_char_p, POINTER(c_int)],
+            group.encode("ascii"),
+            byref(total),
+        )
+        count = total.value
+        log.debug("collector.mt4.get_users_by_group", group=group, count=count)
+
+        if not ptr or count <= 0:
+            return []
+
+        try:
+            result = []
+            for i in range(count):
+                result.append(struct_to_dict(ptr[i]))
+            return result
+        finally:
+            self._memfree(ptr)
 
     def get_trades_by_group(self, group: str = "*") -> list[dict]:
-        """Fetch open orders (close_time=0). Returns list of dicts."""
-        return []
+        """
+        Fetch open orders (close_time==0) for the given group mask.
+        Uses AdmTradesRequest(group, open_only=1) (vtable[80]).
+        Returns list of dicts.
+        """
+        self._assert_connected()
+        total = c_int(0)
+        ptr = _call_vtfn(
+            self._mgr, _VT_ADM_TRADES_REQ,
+            POINTER(TradeRecord),
+            [c_char_p, c_int, POINTER(c_int)],
+            group.encode("ascii"),
+            1,   # open_only=1 → open orders only
+            byref(total),
+        )
+        count = total.value
+        log.debug("collector.mt4.get_trades_by_group", group=group, count=count)
+
+        if not ptr or count <= 0:
+            return []
+
+        try:
+            result = []
+            for i in range(count):
+                rec = struct_to_dict(ptr[i])
+                if rec.get("close_time", 0) == 0:
+                    result.append(rec)
+            return result
+        finally:
+            self._memfree(ptr)
 
     def get_history_by_group(self, group: str, from_ts: int, to_ts: int) -> list[dict]:
-        """Fetch closed deals (close_time>0) in time range. Returns list of dicts."""
-        return []
+        """
+        Fetch closed deals (close_time>0) in [from_ts, to_ts] unix seconds.
 
-    def get_symbols(self) -> list[dict]:
-        """Fetch all symbol info. Returns list of dicts."""
-        return []
+        Uses ReportsRequest(req*, logins*, &total) (vtable[110]) — one batched
+        server call for all logins, rather than per-login loops.
+
+        AdmTradesRequest(open_only=0) is NOT used — it loads all trades for all
+        accounts without a time filter and is prohibitively slow (57+ minutes).
+        TradesUserHistory per-login (vtable[108]) is a valid fallback but requires
+        one network round-trip per account (~15 min for 12K accounts).
+        """
+        self._assert_connected()
+
+        # Step 1: get all logins for this group
+        total_users = c_int(0)
+        user_ptr = _call_vtfn(
+            self._mgr, _VT_ADM_USERS_REQ,
+            POINTER(UserRecord),
+            [c_char_p, POINTER(c_int)],
+            group.encode("ascii"),
+            byref(total_users),
+        )
+        user_count = total_users.value
+        log.debug("collector.mt4.get_history_by_group",
+                  group=group, logins=user_count, from_ts=from_ts, to_ts=to_ts)
+
+        if not user_ptr or user_count <= 0:
+            return []
+
+        try:
+            logins = [user_ptr[i].login for i in range(user_count)]
+        finally:
+            self._memfree(user_ptr)
+
+        # Step 2: batch history fetch via ReportsRequest (one call, time-ranged)
+        req = ReportGroupRequest()
+        req.name    = b""
+        req.from_ts = c_int(from_ts).value
+        req.to_ts   = c_int(to_ts).value
+        req.total   = len(logins)
+
+        login_arr = (c_int * len(logins))(*logins)
+
+        total = c_int(0)
+        ptr = _call_vtfn(
+            self._mgr, _VT_REPORTS_REQUEST,
+            POINTER(TradeRecord),
+            [POINTER(ReportGroupRequest), POINTER(c_int), POINTER(c_int)],
+            byref(req),
+            cast(login_arr, POINTER(c_int)),
+            byref(total),
+        )
+        count = total.value
+        log.debug("collector.mt4.get_history_by_group.batch",
+                  group=group, count=count, from_ts=from_ts, to_ts=to_ts)
+
+        if not ptr or count <= 0:
+            return []
+
+        try:
+            result = []
+            for i in range(count):
+                rec = struct_to_dict(ptr[i])
+                if rec.get("close_time", 0) > 0:
+                    result.append(rec)
+            log.debug("collector.mt4.get_history_by_group.done",
+                      group=group, deals=len(result))
+            return result
+        finally:
+            self._memfree(ptr)
 
     def get_online(self) -> list[dict]:
-        """Fetch all active sessions. Returns list of dicts."""
+        """
+        Fetch all active sessions.
+        Uses OnlineRequest (vtable[104]).
+        Returns list of dicts with ip as packed uint32 integer.
+        """
+        self._assert_connected()
+        total = c_int(0)
+        ptr = _call_vtfn(
+            self._mgr, _VT_ONLINE_REQ,
+            POINTER(OnlineRecord),
+            [POINTER(c_int)],
+            byref(total),
+        )
+        count = total.value
+        log.debug("collector.mt4.get_online", count=count)
+
+        if not ptr or count <= 0:
+            return []
+
+        try:
+            result = []
+            for i in range(count):
+                result.append(struct_to_dict(ptr[i]))
+            return result
+        finally:
+            self._memfree(ptr)
+
+    def get_symbols(self) -> list[dict]:
+        """
+        Fetch symbol info.
+        Note: ConSymbol struct is large and complex (1936 bytes).
+        Returns empty list — implement SymbolsGetAll (vtable[86]) in a future iteration.
+        """
+        log.info("collector.mt4.get_symbols.not_implemented",
+                 msg="SymbolsGetAll requires ConSymbol struct (1936 bytes) — skipping for now")
         return []
 
     def get_margin_levels(self) -> list[dict]:
-        """Fetch all account margin snapshots. Returns list of dicts."""
+        """
+        Fetch account margin snapshots.
+        Note: MarginsGet (vtable[128]) requires pumping mode — not yet enabled.
+        Returns empty list.
+        """
+        log.info("collector.mt4.get_margin_levels.not_implemented",
+                 msg="MarginsGet requires pumping mode — skipping for now")
         return []
 
     def get_summary(self) -> list[dict]:
-        """Fetch per-symbol position summaries. Returns list of dicts."""
+        """
+        Fetch per-symbol position summaries.
+        Note: SummaryGetAll (vtable[149]) requires pumping mode — not yet enabled.
+        Returns empty list.
+        """
+        log.info("collector.mt4.get_summary.not_implemented",
+                 msg="SummaryGetAll requires pumping mode — skipping for now")
         return []

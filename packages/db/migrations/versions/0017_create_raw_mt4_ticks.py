@@ -27,7 +27,7 @@ def upgrade() -> None:
     op.create_table(
         "raw_mt4_ticks",
 
-        sa.Column("id", postgresql.UUID(as_uuid=True), primary_key=True),
+        sa.Column("id", postgresql.UUID(as_uuid=True), nullable=False),
         sa.Column("broker_id", postgresql.UUID(as_uuid=True), nullable=False),
         sa.Column("server_id", postgresql.UUID(as_uuid=True), nullable=True),
 

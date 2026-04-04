@@ -363,7 +363,7 @@ def _dedup_columns(entity_name: str) -> list[str]:
         "orders":    ["broker_id", "server_id", "order_id"],
         "positions": ["broker_id", "server_id", "position_id"],
         "symbols":   ["broker_id", "server_id", "symbol"],
-        "groups":    ["broker_id", "server_id", "group"],
+        "groups":    ["broker_id", "server_id", "group_name"],
         "online":    ["broker_id", "server_id", "session_id"],
         "summary":   ["broker_id", "server_id", "symbol"],
         "exposure":  ["broker_id", "server_id", "symbol"],
@@ -377,19 +377,16 @@ def _extract_mt5_fields(entity_name: str, rec: dict) -> dict:
     if entity_name == "accounts":
         return {
             "login":               rec.get("Login"),
-            "group":               rec.get("Group"),
+            "group_name":          rec.get("Group"),          # schema col is group_name
             "name":                rec.get("Name"),
-            "email":               rec.get("EMail"),
             "balance":             rec.get("Balance"),
             "credit":              rec.get("Credit"),
             "leverage":            rec.get("Leverage"),
-            "registration":        _unix_s_to_dt(rec.get("Registration")),
-            "last_access":         _unix_s_to_dt(rec.get("LastAccess")),
+            "registration":        rec.get("Registration"),   # BigInteger (unix seconds)
+            "last_access":         rec.get("LastAccess"),     # BigInteger (unix seconds)
             "last_ip":             rec.get("LastIP"),
             "country":             rec.get("Country"),
-            "status":              rec.get("Status"),
             "rights":              rec.get("Rights"),
-            "agent":               rec.get("Agent"),
             "source_timestamp":    _unix_s_to_dt(rec.get("Registration")),
         }
 
@@ -421,8 +418,6 @@ def _extract_mt5_fields(entity_name: str, rec: dict) -> dict:
             "volume_initial":   rec.get("VolumeInitial"),
             "volume_current":   rec.get("VolumeCurrent"),
             "price_order":      rec.get("PriceOrder"),
-            "price_sl":         rec.get("PriceSL"),
-            "price_tp":         rec.get("PriceTP"),
             "position_id":      rec.get("PositionID"),
             "time_setup_msc":   rec.get("TimeSetupMsc"),
             "source_timestamp": _ts(rec.get("TimeSetupMsc")),
@@ -437,8 +432,6 @@ def _extract_mt5_fields(entity_name: str, rec: dict) -> dict:
             "volume":           rec.get("Volume"),
             "price_open":       rec.get("PriceOpen"),
             "price_current":    rec.get("PriceCurrent"),
-            "price_sl":         rec.get("PriceSL"),
-            "price_tp":         rec.get("PriceTP"),
             "profit":           rec.get("Profit"),
             "storage":          rec.get("Storage"),
             "time_create_msc":  rec.get("TimeCreateMsc"),
@@ -451,11 +444,6 @@ def _extract_mt5_fields(entity_name: str, rec: dict) -> dict:
             "description":      rec.get("Description"),
             "digits":           rec.get("Digits"),
             "contract_size":    rec.get("ContractSize"),
-            "volume_min":       rec.get("VolumeMin"),
-            "volume_max":       rec.get("VolumeMax"),
-            "volume_step":      rec.get("VolumeStep"),
-            "tick_size":        rec.get("TickSize"),
-            "tick_value":       rec.get("TickValue"),
             "currency_base":    rec.get("CurrencyBase"),
             "currency_profit":  rec.get("CurrencyProfit"),
             "currency_margin":  rec.get("CurrencyMargin"),
@@ -463,7 +451,7 @@ def _extract_mt5_fields(entity_name: str, rec: dict) -> dict:
 
     elif entity_name == "groups":
         return {
-            "group":            rec.get("Group"),
+            "group_name":       rec.get("Group"),   # schema col is group_name
             "currency":         rec.get("Currency"),
             "margin_call":      rec.get("MarginCall"),
             "margin_stop_out":  rec.get("MarginStopOut"),
@@ -483,22 +471,28 @@ def _extract_mt5_fields(entity_name: str, rec: dict) -> dict:
 
     elif entity_name == "summary":
         return {
-            "symbol":   rec.get("Symbol"),
-            "buy":      rec.get("Buy"),
-            "sell":     rec.get("Sell"),
-            "buy_volume":  rec.get("BuyVolume"),
-            "sell_volume": rec.get("SellVolume"),
-            "buy_profit":  rec.get("BuyProfit"),
-            "sell_profit": rec.get("SellProfit"),
+            "symbol":                  rec.get("Symbol"),
+            "digits":                  rec.get("Digits"),
+            "position_clients":        rec.get("PositionClients"),
+            "profit_clients":          rec.get("ProfitClients"),
+            "profit_full_clients":     rec.get("ProfitFullClients"),
+            "profit_uncovered":        rec.get("ProfitUncovered"),
+            "profit_uncovered_full":   rec.get("ProfitUncoveredFull"),
+            "volume_buy_clients":      rec.get("VolumeBuyClients"),
+            "volume_sell_clients":     rec.get("VolumeSellClients"),
+            "volume_buy_clients_ext":  rec.get("VolumeBuyClientsExt"),
+            "volume_sell_clients_ext": rec.get("VolumeSellClientsExt"),
+            "volume_net":              rec.get("VolumeNet"),
         }
 
     elif entity_name == "exposure":
         return {
-            "symbol":      rec.get("Symbol"),
-            "buy_volume":  rec.get("BuyVolume"),
-            "sell_volume": rec.get("SellVolume"),
-            "buy_profit":  rec.get("BuyProfit"),
-            "sell_profit": rec.get("SellProfit"),
+            "symbol":          rec.get("Symbol"),
+            "digits":          rec.get("Digits"),
+            "price_rate":      rec.get("PriceRate"),
+            "volume_clients":  rec.get("VolumeClients"),
+            "volume_coverage": rec.get("VolumeCoverage"),
+            "volume_net":      rec.get("VolumeNet"),
         }
 
     return {}
