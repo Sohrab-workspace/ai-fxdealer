@@ -25,9 +25,31 @@ import structlog
 import MT5Manager
 
 from shared.base_collector import BaseCollector
-from db.ingestion import save_raw_records, log_collector_run, log_collector_error
+from db.ingestion import save_raw_records, save_tick_records, log_collector_run, log_collector_error
 
 log = structlog.get_logger()
+
+
+# ── Unicode surrogate sanitizer ───────────────────────────────────────────────
+
+import re as _re
+_SURROGATE_RE = _re.compile(r'[\ud800-\udfff]')
+
+def _sanitize(obj):
+    """Recursively replace lone Unicode surrogates with U+FFFD.
+
+    MT5 servers can return strings (names, addresses) containing lone UTF-16
+    surrogate code points (e.g. \\ud8da). PostgreSQL rejects these as invalid
+    JSON. Replace them with the Unicode replacement character so the payload
+    stores cleanly without data loss elsewhere in the record.
+    """
+    if isinstance(obj, str):
+        return _SURROGATE_RE.sub('\ufffd', obj)
+    elif isinstance(obj, dict):
+        return {k: _sanitize(v) for k, v in obj.items()}
+    elif isinstance(obj, (list, tuple)):
+        return [_sanitize(v) for v in obj]
+    return obj
 
 
 # ── MT5 object → dict serializer ─────────────────────────────────────────────
@@ -152,7 +174,7 @@ class MT5Collector(BaseCollector):
         start = time.monotonic()
 
         # Static entities first (no time window)
-        for entity in ("accounts", "symbols", "groups", "positions", "online", "summary", "exposure"):
+        for entity in ("accounts", "symbols", "groups", "positions", "online", "summary", "exposure", "ticks"):
             try:
                 records = self.fetch_entity(entity)
                 saved = self.save_raw(entity, records)
@@ -162,7 +184,7 @@ class MT5Collector(BaseCollector):
                 self.handle_error(exc, {"entity": entity, "sync_mode": "bootstrap"})
 
         # Time-windowed entities
-        for entity in ("deals", "orders"):
+        for entity in ("deals", "orders", "server_logs"):
             try:
                 records = self.fetch_entity(entity, from_ts=from_ts, to_ts=to_ts)
                 saved = self.save_raw(entity, records)
@@ -195,7 +217,7 @@ class MT5Collector(BaseCollector):
         start = time.monotonic()
 
         # Snapshot entities (always re-fetch full set)
-        for entity in ("accounts", "positions", "online", "summary", "exposure"):
+        for entity in ("accounts", "positions", "online", "summary", "exposure", "ticks"):
             try:
                 records = self.fetch_entity(entity)
                 saved = self.save_raw(entity, records)
@@ -204,7 +226,7 @@ class MT5Collector(BaseCollector):
                 self.handle_error(exc, {"entity": entity, "sync_mode": "incremental"})
 
         # Incremental entities (time-windowed from cursor)
-        for entity in ("deals", "orders"):
+        for entity in ("deals", "orders", "server_logs"):
             try:
                 records = self.fetch_entity(entity, from_ts=from_ts, to_ts=to_ts)
                 saved = self.save_raw(entity, records)
@@ -274,6 +296,36 @@ class MT5Collector(BaseCollector):
             objs = m.ExposureGetAll() or []
             return [_mt5_to_dict(o) for o in objs]
 
+        elif entity_name == "server_logs":
+            # ManagerAPI.LoggerServerRequest(mode, type, from, to, filter) → [MTLogRecordPy]
+            # mode=0 (MTLogModeStd), type=0 (MTLogTypeAll = all events), filter="" (no filter)
+            # MTLogRecord fields: flags, code, type, datetime (unix s), source, message, datetime_msc
+            objs = m.LoggerServerRequest(0, 0, from_ts, to_ts, "") or []
+            if not isinstance(objs, (list, tuple)):
+                objs = []
+            return [_mt5_to_dict(o) for o in objs]
+
+        elif entity_name == "ticks":
+            # Get current last tick for every symbol via TickLast(symbol).
+            # MTTick payload fields (lowercase): ask, bid, datetime, datetime_msc,
+            # flags, last, volume, volume_ext.  Symbol is NOT in MTTick — inject as _symbol.
+            sym_objs = m.SymbolGetArray() or []
+            ticks = []
+            for sym_obj in sym_objs:
+                sym_dict = _mt5_to_dict(sym_obj)
+                symbol = sym_dict.get("Symbol", "")
+                if not symbol:
+                    continue
+                try:
+                    tick_obj = m.TickLast(symbol)
+                    if tick_obj:
+                        tick_dict = _mt5_to_dict(tick_obj)
+                        tick_dict["_symbol"] = symbol
+                        ticks.append(tick_dict)
+                except Exception:
+                    pass
+            return ticks
+
         else:
             raise ValueError(f"Unknown entity: {entity_name!r}")
 
@@ -284,23 +336,43 @@ class MT5Collector(BaseCollector):
             return 0
 
         entity_to_table = {
-            "accounts":  "raw_mt5_accounts",
-            "deals":     "raw_mt5_deals",
-            "orders":    "raw_mt5_orders",
-            "positions": "raw_mt5_positions",
-            "symbols":   "raw_mt5_symbols",
-            "groups":    "raw_mt5_groups",
-            "online":    "raw_mt5_online",
-            "summary":   "raw_mt5_summary",
-            "exposure":  "raw_mt5_exposure",
+            "accounts":    "raw_mt5_accounts",
+            "deals":       "raw_mt5_deals",
+            "orders":      "raw_mt5_orders",
+            "positions":   "raw_mt5_positions",
+            "symbols":     "raw_mt5_symbols",
+            "groups":      "raw_mt5_groups",
+            "online":      "raw_mt5_online",
+            "summary":     "raw_mt5_summary",
+            "exposure":    "raw_mt5_exposure",
+            "server_logs": "raw_mt5_server_logs",
+            "ticks":       "raw_mt5_ticks",
         }
         table = entity_to_table.get(entity_name)
         if not table:
             raise ValueError(f"No table mapped for entity: {entity_name!r}")
 
         now = datetime.now(timezone.utc)
+
+        # Ticks are append-only: no status, ingestion_hash, or superseding
+        if entity_name == "ticks":
+            rows = []
+            for rec in records:
+                rec = _sanitize(rec)
+                row = {
+                    "id":           uuid.uuid4(),
+                    "broker_id":    self.broker_id,
+                    "server_id":    self.server_id,
+                    "payload_json": rec,
+                    "collected_at": now,
+                }
+                row.update(_extract_mt5_fields("ticks", rec))
+                rows.append(row)
+            return save_tick_records(table, rows)
+
         rows = []
         for rec in records:
+            rec = _sanitize(rec)
             row = {
                 "id":              uuid.uuid4(),
                 "broker_id":       self.broker_id,
@@ -358,15 +430,17 @@ class MT5Collector(BaseCollector):
 def _dedup_columns(entity_name: str) -> list[str]:
     """Columns used for the partial unique index (WHERE status = 'active')."""
     return {
-        "accounts":  ["broker_id", "server_id", "login"],
-        "deals":     ["broker_id", "server_id", "deal_id"],
-        "orders":    ["broker_id", "server_id", "order_id"],
-        "positions": ["broker_id", "server_id", "position_id"],
-        "symbols":   ["broker_id", "server_id", "symbol"],
-        "groups":    ["broker_id", "server_id", "group_name"],
-        "online":    ["broker_id", "server_id", "session_id"],
-        "summary":   ["broker_id", "server_id", "symbol"],
-        "exposure":  ["broker_id", "server_id", "symbol"],
+        "accounts":    ["broker_id", "server_id", "login"],
+        "deals":       ["broker_id", "server_id", "deal_id"],
+        "orders":      ["broker_id", "server_id", "order_id"],
+        "positions":   ["broker_id", "server_id", "position_id"],
+        "symbols":     ["broker_id", "server_id", "symbol"],
+        "groups":      ["broker_id", "server_id", "group_name"],
+        "online":      ["broker_id", "server_id", "session_id"],
+        "summary":     ["broker_id", "server_id", "symbol"],
+        "exposure":    ["broker_id", "server_id", "symbol"],
+        "server_logs": [],  # no unique key — cursor-based collection prevents re-fetch
+        "ticks":       [],  # append-only hypertable
     }.get(entity_name, [])
 
 
@@ -493,6 +567,38 @@ def _extract_mt5_fields(entity_name: str, rec: dict) -> dict:
             "volume_clients":  rec.get("VolumeClients"),
             "volume_coverage": rec.get("VolumeCoverage"),
             "volume_net":      rec.get("VolumeNet"),
+        }
+
+    elif entity_name == "server_logs":
+        # MTLogRecord fields (from MT5Manager Python SDK):
+        #   flags (UINT), code (UINT/EnMTLogCode), type (INT/EnMTLogType),
+        #   datetime (INT64 unix s), source (wchar str), message (wchar str),
+        #   datetime_msc (INT64 unix ms)
+        # _mt5_to_dict() returns lowercase attribute names from the Python object.
+        time_s = rec.get("datetime")
+        return {
+            "log_time":       _unix_s_to_dt(time_s),
+            "category":       rec.get("type"),      # EnMTLogType (event category)
+            "code":           rec.get("code"),      # EnMTLogCode (severity: 0=info,2=err,4=login)
+            "message":        rec.get("message"),
+            # login, ip_address, computer_id populated later by log_parser.py
+            "login":          None,
+            "ip_address":     None,
+            "computer_id":    None,
+            "is_login_event": False,
+        }
+
+    elif entity_name == "ticks":
+        # MTTick payload uses lowercase keys: ask, bid, datetime, datetime_msc,
+        # flags, last, volume, volume_ext.  _symbol is injected by fetch_entity.
+        return {
+            "symbol":           rec.get("_symbol"),
+            "ask":              rec.get("ask"),
+            "bid":              rec.get("bid"),
+            "last":             rec.get("last"),
+            "volume":           rec.get("volume"),
+            "datetime_msc":     rec.get("datetime_msc"),
+            "source_timestamp": _unix_ms_to_dt(rec.get("datetime_msc")),
         }
 
     return {}

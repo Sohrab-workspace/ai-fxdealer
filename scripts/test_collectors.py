@@ -222,8 +222,8 @@ def test_mt5() -> None:
     now = int(time.time())
     try:
         deals = collector.fetch_entity("deals",
-                                       from_ts=(now - 30 * 86400) * 1000,
-                                       to_ts=now * 1000)
+                                       from_ts=now - 30 * 86400,
+                                       to_ts=now)
         _report("mt5", True, f"Fetched deals: {len(deals)}", {"count": len(deals)})
     except Exception as e:
         _report("mt5", False, f"fetch deals failed: {e}")
@@ -241,8 +241,8 @@ def test_mt5() -> None:
         print("  [DB] Running bootstrap_sync …")
         try:
             result = collector.bootstrap_sync(
-                start_time=(now - 30 * 86400) * 1000,
-                end_time=now * 1000,
+                start_time=now - 30 * 86400,
+                end_time=now,
             )
             _report("mt5", True, "bootstrap_sync OK", {
                 "records_fetched": result.get("records_fetched"),

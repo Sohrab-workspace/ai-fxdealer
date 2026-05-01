@@ -1687,3 +1687,465 @@ class RawCTraderGroup(Base):
         ),
         Index("ix_raw_ctrader_groups_broker_collected", "broker_id", "collected_at"),
     )
+
+
+# =============================================================================
+# Normalized tables  (norm_*)
+# Phase 4 — cross-source unified schema
+# Raw data from MT4/MT5/cTrader is normalized into these tables
+# for rule engine evaluation and dashboard queries.
+# =============================================================================
+
+
+class NormAccount(Base):
+    """
+    Normalized trading account — unified across MT4, MT5, cTrader.
+
+    One active record per (broker_id, server_id, source_account_id).
+    Updated on each collector sync via supersede pattern.
+    Plain PostgreSQL — low volume reference data.
+    """
+
+    __tablename__ = "norm_accounts"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    broker_id = Column(UUID(as_uuid=True), nullable=False)
+    server_id = Column(UUID(as_uuid=True))
+    source_system = Column(String, nullable=False)       # mt4 | mt5 | ctrader
+    source_account_id = Column(String, nullable=False)   # login as string (cross-source key)
+    login = Column(BigInteger)                           # numeric login for indexing
+    group_name = Column(String)
+    account_name = Column(String)
+    balance = Column(Float)
+    equity = Column(Float)
+    credit = Column(Float)
+    leverage = Column(Integer)
+    currency = Column(String)
+    country = Column(String)
+    swap_free = Column(Integer, server_default="0")      # 1 = Islamic/swap-free account
+    is_demo = Column(Integer, server_default="0")        # 1 = demo account
+    registration_ts = Column(BigInteger)                 # Unix ms of account registration
+    last_access_ts = Column(BigInteger)                  # Unix ms of last login
+    account_status = Column(String)                      # active | disabled | archived
+    raw_id = Column(UUID(as_uuid=True))                  # reference to source raw record
+    normalized_at = Column(DateTime(timezone=True), nullable=False)
+    status = Column(String, nullable=False, server_default="active")  # active | superseded
+    created_at = Column(DateTime(timezone=True), nullable=False, server_default=text("NOW()"))
+    updated_at = Column(DateTime(timezone=True))
+
+    __table_args__ = (
+        Index(
+            "uq_norm_accounts_active",
+            "broker_id", "server_id", "source_account_id",
+            unique=True,
+            postgresql_where=text("status = 'active'"),
+        ),
+        Index("ix_norm_accounts_broker_login", "broker_id", "login"),
+        Index("ix_norm_accounts_broker_group", "broker_id", "group_name"),
+        Index("ix_norm_accounts_broker_country", "broker_id", "country"),
+        Index("ix_norm_accounts_swap_free", "broker_id", "swap_free"),
+    )
+
+
+class NormDeal(Base):
+    """
+    Normalized deal — unified execution record across MT4, MT5, cTrader.
+
+    For MT4: one closed TradeRecord = one NormDeal (open+close in one record).
+    For MT5: one ProtoDeal entry record.
+    For cTrader: one ProtoDeal fill execution.
+
+    TimescaleDB hypertable — partitioned by deal_time.
+    Retention: 2 years.
+    """
+
+    __tablename__ = "norm_deals"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    broker_id = Column(UUID(as_uuid=True), nullable=False)
+    server_id = Column(UUID(as_uuid=True))
+    source_system = Column(String, nullable=False)       # mt4 | mt5 | ctrader
+    source_deal_id = Column(String, nullable=False)      # native deal/ticket ID as string
+    source_account_id = Column(String, nullable=False)   # login as string
+    login = Column(BigInteger)
+    symbol = Column(String)
+    direction = Column(Integer)                          # 0=buy, 1=sell
+    volume_lots = Column(Float)                          # normalized to standard lots
+    price = Column(Float)                                # execution price
+    profit = Column(Float)                               # realized P&L in account currency
+    commission = Column(Float)
+    swap = Column(Float)
+    open_time_msc = Column(BigInteger)                   # position open Unix ms (MT4: open_time*1000)
+    close_time_msc = Column(BigInteger)                  # position close Unix ms
+    deal_time_msc = Column(BigInteger, nullable=False)   # primary execution time (hypertable basis)
+    duration_ms = Column(BigInteger)                     # holding duration in ms (close - open)
+    deal_type = Column(String)                           # trade | balance | credit | deposit | withdrawal
+    raw_id = Column(UUID(as_uuid=True))
+    deal_time = Column(DateTime(timezone=True), nullable=False)  # hypertable partition key
+    normalized_at = Column(DateTime(timezone=True), nullable=False)
+
+    __table_args__ = (
+        # Non-unique — dedup enforced by normalizer (TimescaleDB can't have unique index without partition key)
+        Index("ix_norm_deals_source_id", "broker_id", "server_id", "source_system", "source_deal_id"),
+        Index("ix_norm_deals_broker_login_time", "broker_id", "login", "deal_time"),
+        Index("ix_norm_deals_broker_symbol_time", "broker_id", "symbol", "deal_time"),
+    )
+
+
+class NormPosition(Base):
+    """
+    Normalized open position — unified across MT4, MT5, cTrader.
+
+    Snapshot of currently open positions per collection run.
+    Plain PostgreSQL — moderate volume, supersede on sync.
+    """
+
+    __tablename__ = "norm_positions"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    broker_id = Column(UUID(as_uuid=True), nullable=False)
+    server_id = Column(UUID(as_uuid=True))
+    source_system = Column(String, nullable=False)
+    source_position_id = Column(String, nullable=False)
+    source_account_id = Column(String, nullable=False)
+    login = Column(BigInteger)
+    symbol = Column(String)
+    direction = Column(Integer)                          # 0=buy, 1=sell
+    volume_lots = Column(Float)
+    price_open = Column(Float)
+    price_current = Column(Float)
+    profit = Column(Float)
+    swap = Column(Float)
+    open_time_msc = Column(BigInteger)
+    raw_id = Column(UUID(as_uuid=True))
+    normalized_at = Column(DateTime(timezone=True), nullable=False)
+    status = Column(String, nullable=False, server_default="active")
+    created_at = Column(DateTime(timezone=True), nullable=False, server_default=text("NOW()"))
+    updated_at = Column(DateTime(timezone=True))
+
+    __table_args__ = (
+        Index(
+            "uq_norm_positions_active",
+            "broker_id", "server_id", "source_system", "source_position_id",
+            unique=True,
+            postgresql_where=text("status = 'active'"),
+        ),
+        Index("ix_norm_positions_broker_login", "broker_id", "login"),
+        Index("ix_norm_positions_broker_symbol", "broker_id", "symbol"),
+    )
+
+
+class NormOrder(Base):
+    """
+    Normalized pending/historical order — unified across MT4, MT5, cTrader.
+    Plain PostgreSQL.
+    """
+
+    __tablename__ = "norm_orders"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    broker_id = Column(UUID(as_uuid=True), nullable=False)
+    server_id = Column(UUID(as_uuid=True))
+    source_system = Column(String, nullable=False)
+    source_order_id = Column(String, nullable=False)
+    source_account_id = Column(String, nullable=False)
+    login = Column(BigInteger)
+    symbol = Column(String)
+    order_type = Column(String)                          # market | limit | stop | stop_limit
+    direction = Column(Integer)                          # 0=buy, 1=sell
+    volume_lots = Column(Float)
+    price_order = Column(Float)
+    price_current = Column(Float)
+    time_setup_msc = Column(BigInteger)
+    time_done_msc = Column(BigInteger)
+    order_status = Column(String)                        # pending | filled | cancelled | expired
+    raw_id = Column(UUID(as_uuid=True))
+    normalized_at = Column(DateTime(timezone=True), nullable=False)
+    status = Column(String, nullable=False, server_default="active")
+    created_at = Column(DateTime(timezone=True), nullable=False, server_default=text("NOW()"))
+    updated_at = Column(DateTime(timezone=True))
+
+    __table_args__ = (
+        Index(
+            "uq_norm_orders_active",
+            "broker_id", "server_id", "source_system", "source_order_id",
+            unique=True,
+            postgresql_where=text("status = 'active'"),
+        ),
+        Index("ix_norm_orders_broker_login", "broker_id", "login"),
+        Index("ix_norm_orders_broker_symbol", "broker_id", "symbol"),
+    )
+
+
+class NormSymbol(Base):
+    """
+    Normalized symbol reference — unified across MT4, MT5, cTrader.
+    Plain PostgreSQL — low volume config.
+    """
+
+    __tablename__ = "norm_symbols"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    broker_id = Column(UUID(as_uuid=True), nullable=False)
+    server_id = Column(UUID(as_uuid=True))
+    source_system = Column(String, nullable=False)
+    symbol = Column(String, nullable=False)
+    description = Column(String)
+    category = Column(String)                            # forex | metals | indices | crypto | energy | other
+    currency_base = Column(String)
+    currency_profit = Column(String)
+    digits = Column(Integer)
+    contract_size = Column(Float)
+    swap_long = Column(Float)                            # swap rate for buy positions
+    swap_short = Column(Float)                           # swap rate for sell positions
+    spread = Column(Integer)
+    raw_id = Column(UUID(as_uuid=True))
+    normalized_at = Column(DateTime(timezone=True), nullable=False)
+    status = Column(String, nullable=False, server_default="active")
+    created_at = Column(DateTime(timezone=True), nullable=False, server_default=text("NOW()"))
+    updated_at = Column(DateTime(timezone=True))
+
+    __table_args__ = (
+        Index(
+            "uq_norm_symbols_active",
+            "broker_id", "server_id", "source_system", "symbol",
+            unique=True,
+            postgresql_where=text("status = 'active'"),
+        ),
+        Index("ix_norm_symbols_broker_symbol", "broker_id", "symbol"),
+    )
+
+
+# =============================================================================
+# Rule Engine tables  (re_*)
+# Phase 4 — detection, scoring, cases, evidence
+# =============================================================================
+
+
+class ReRuleEngine(Base):
+    """
+    Catalog of available rule engines.
+    Seeded on startup — one row per handler (LARB, PGE, SFA, ...).
+    """
+
+    __tablename__ = "re_rule_engines"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    handler = Column(String, nullable=False, unique=True)  # LARB | PGE | SFA
+    name = Column(String, nullable=False)
+    description = Column(String)
+    version = Column(String, server_default="1.0.0")
+    is_active = Column(Integer, nullable=False, server_default="1")  # 1=active
+    created_at = Column(DateTime(timezone=True), nullable=False, server_default=text("NOW()"))
+    updated_at = Column(DateTime(timezone=True))
+
+    configs = relationship("ReRuleConfig", back_populates="rule_engine")
+
+
+class ReRuleConfig(Base):
+    """
+    Per-broker per-rule configuration and threshold overrides.
+    One row per (broker_id, rule_engine_id) — upserted on config change.
+    """
+
+    __tablename__ = "re_rule_configs"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    broker_id = Column(UUID(as_uuid=True), nullable=False)
+    rule_engine_id = Column(UUID(as_uuid=True), ForeignKey("re_rule_engines.id"), nullable=False)
+    is_active = Column(Integer, nullable=False, server_default="1")
+    evaluation_window_hours = Column(Integer, server_default="168")  # default 7-day window
+    min_score_alert = Column(Integer, server_default="50")           # minimum score to create case
+    config_json = Column(JSONB)                                      # threshold overrides per metric group
+    created_at = Column(DateTime(timezone=True), nullable=False, server_default=text("NOW()"))
+    updated_at = Column(DateTime(timezone=True))
+
+    rule_engine = relationship("ReRuleEngine", back_populates="configs")
+
+    __table_args__ = (
+        UniqueConstraint("broker_id", "rule_engine_id", name="uq_re_rule_configs_broker_rule"),
+        Index("ix_re_rule_configs_broker_id", "broker_id"),
+    )
+
+
+class ReMetric(Base):
+    """
+    Individual metric result from a single rule evaluation run.
+
+    One row per metric per evaluation. Groups multiple metrics
+    under evaluation_id for aggregation into a final score.
+
+    TimescaleDB hypertable — partitioned by evaluated_at.
+    Retention: 2 years.
+    """
+
+    __tablename__ = "re_metrics"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    broker_id = Column(UUID(as_uuid=True), nullable=False)
+    rule_engine_id = Column(UUID(as_uuid=True), nullable=False)  # bare UUID, no FK for perf
+    evaluation_id = Column(UUID(as_uuid=True), nullable=False)   # groups all metrics from same run
+    source_account_id = Column(String, nullable=False)
+    login = Column(BigInteger)
+    metric_group = Column(String)        # A | B | C … (rule group label from skill file)
+    metric_name = Column(String, nullable=False)
+    metric_value = Column(Float)         # raw computed value
+    metric_score = Column(Integer)       # normalized 0-100 score for this metric
+    weight = Column(Integer)             # configured weight for this metric
+    weighted_score = Column(Float)       # metric_score * weight / 100
+    detail_json = Column(JSONB)          # supporting data / evidence for this metric
+    evaluated_at = Column(DateTime(timezone=True), nullable=False)  # hypertable key
+
+    __table_args__ = (
+        Index("ix_re_metrics_broker_eval", "broker_id", "evaluation_id"),
+        Index("ix_re_metrics_broker_account_time", "broker_id", "source_account_id", "evaluated_at"),
+        Index("ix_re_metrics_broker_rule_time", "broker_id", "rule_engine_id", "evaluated_at"),
+    )
+
+
+class ReAccountScore(Base):
+    """
+    Final weighted score for an account from a single rule evaluation.
+
+    Aggregated from ReMetric rows under same evaluation_id.
+    One row per evaluation run per account.
+
+    TimescaleDB hypertable — partitioned by evaluated_at.
+    Retention: 2 years.
+    """
+
+    __tablename__ = "re_account_scores"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    broker_id = Column(UUID(as_uuid=True), nullable=False)
+    rule_engine_id = Column(UUID(as_uuid=True), nullable=False)
+    evaluation_id = Column(UUID(as_uuid=True), nullable=False)  # unique enforced at app layer
+    source_account_id = Column(String, nullable=False)
+    login = Column(BigInteger)
+    total_score = Column(Integer, nullable=False)       # 0-100 final weighted score
+    severity = Column(String, nullable=False)           # normal | monitor | suspicious | abuse_candidate
+    score_breakdown_json = Column(JSONB)                # group-level scores: {A: 20, B: 15, ...}
+    evaluated_at = Column(DateTime(timezone=True), nullable=False)  # hypertable key
+
+    __table_args__ = (
+        Index("ix_re_account_scores_eval_id", "evaluation_id"),
+        Index("ix_re_account_scores_broker_account_time", "broker_id", "source_account_id", "evaluated_at"),
+        Index("ix_re_account_scores_broker_rule_time", "broker_id", "rule_engine_id", "evaluated_at"),
+        Index("ix_re_account_scores_severity", "broker_id", "severity", "evaluated_at"),
+    )
+
+
+class ReAccountTag(Base):
+    """
+    Risk tags applied to accounts — either by rule engine or manually by dealer.
+    Supports multiple active tags per account.
+    Plain PostgreSQL.
+    """
+
+    __tablename__ = "re_account_tags"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    broker_id = Column(UUID(as_uuid=True), nullable=False)
+    source_account_id = Column(String, nullable=False)
+    login = Column(BigInteger)
+    tag = Column(String, nullable=False)                # LARB | PGE | SFA | HIGH_RISK | MANUAL | etc
+    severity = Column(String)                           # normal | monitor | suspicious | abuse_candidate
+    tagged_by = Column(String, nullable=False)          # rule_engine | manual
+    rule_engine_id = Column(UUID(as_uuid=True))         # set if tagged_by=rule_engine
+    case_id = Column(UUID(as_uuid=True))                # linked case if exists
+    evidence_json = Column(JSONB)                       # condensed evidence summary
+    tagged_at = Column(DateTime(timezone=True), nullable=False, server_default=text("NOW()"))
+    removed_at = Column(DateTime(timezone=True))
+    removed_by = Column(UUID(as_uuid=True))             # broker_user_id who removed tag
+    status = Column(String, nullable=False, server_default="active")  # active | removed
+
+    __table_args__ = (
+        Index("ix_re_account_tags_broker_account", "broker_id", "source_account_id"),
+        Index("ix_re_account_tags_broker_tag", "broker_id", "tag", "status"),
+    )
+
+
+class ReCase(Base):
+    """
+    Investigation case opened against an account by the rule engine or manually.
+
+    Lifecycle: pending → under_review → resolved | terminated
+    Plain PostgreSQL.
+    """
+
+    __tablename__ = "re_cases"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    broker_id = Column(UUID(as_uuid=True), nullable=False)
+    source_account_id = Column(String, nullable=False)
+    login = Column(BigInteger)
+    rule_engine_id = Column(UUID(as_uuid=True))          # bare UUID — NULL for manual cases
+    status = Column(String, nullable=False, server_default="pending")
+    # pending | under_review | resolved | terminated
+    severity = Column(String)                            # normal | monitor | suspicious | abuse_candidate
+    score = Column(Integer)                              # score at time case was opened
+    title = Column(String)
+    summary = Column(String)
+    evidence_snapshot_id = Column(UUID(as_uuid=True))    # FK to re_evidence_snapshots
+    assigned_to = Column(UUID(as_uuid=True))             # broker_user_id
+    created_by = Column(String, nullable=False)          # rule_engine | manual
+    created_at = Column(DateTime(timezone=True), nullable=False, server_default=text("NOW()"))
+    updated_at = Column(DateTime(timezone=True))
+    resolved_at = Column(DateTime(timezone=True))
+
+    actions = relationship("ReCaseAction", back_populates="case")
+
+    __table_args__ = (
+        Index("ix_re_cases_broker_account", "broker_id", "source_account_id"),
+        Index("ix_re_cases_broker_status", "broker_id", "status", "created_at"),
+        Index("ix_re_cases_broker_rule", "broker_id", "rule_engine_id", "created_at"),
+    )
+
+
+class ReCaseAction(Base):
+    """
+    Actions taken on a case — by dealer or automated by rule engine.
+    Append-only. Plain PostgreSQL.
+    """
+
+    __tablename__ = "re_case_actions"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    case_id = Column(UUID(as_uuid=True), ForeignKey("re_cases.id"), nullable=False)
+    broker_id = Column(UUID(as_uuid=True), nullable=False)
+    action_type = Column(String, nullable=False)
+    # monitor | restrict | adjust_balance | convert_account | terminate | note | status_change
+    performed_by = Column(UUID(as_uuid=True))            # broker_user_id (NULL = automated)
+    detail_json = Column(JSONB)                          # action parameters and before/after state
+    created_at = Column(DateTime(timezone=True), nullable=False, server_default=text("NOW()"))
+
+    case = relationship("ReCase", back_populates="actions")
+
+    __table_args__ = (
+        Index("ix_re_case_actions_case_id", "case_id"),
+        Index("ix_re_case_actions_broker_time", "broker_id", "created_at"),
+    )
+
+
+class ReEvidenceSnapshot(Base):
+    """
+    Full evidence package captured at evaluation time.
+    Immutable after creation — stores the complete picture used to score an account.
+    Plain PostgreSQL.
+    """
+
+    __tablename__ = "re_evidence_snapshots"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    broker_id = Column(UUID(as_uuid=True), nullable=False)
+    rule_engine_id = Column(UUID(as_uuid=True))
+    source_account_id = Column(String)
+    login = Column(BigInteger)
+    evaluation_id = Column(UUID(as_uuid=True))           # links back to re_account_scores
+    snapshot_json = Column(JSONB, nullable=False)         # full evidence: metrics, raw data refs, scores
+    created_at = Column(DateTime(timezone=True), nullable=False, server_default=text("NOW()"))
+
+    __table_args__ = (
+        Index("ix_re_evidence_broker_account", "broker_id", "source_account_id"),
+        Index("ix_re_evidence_evaluation_id", "evaluation_id"),
+    )

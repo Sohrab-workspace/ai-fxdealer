@@ -9,12 +9,13 @@ All operations use synchronous SQLAlchemy (collectors run in sync threads
 dispatched by ARQ). Database URL comes from FXDEALER_DB_URL env var.
 """
 
+import json
 import os
 import uuid
 from datetime import datetime, timezone
-from typing import Any
 
 import structlog
+from psycopg2.extras import execute_values
 from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker, Session
 
@@ -22,6 +23,8 @@ log = structlog.get_logger()
 
 _engine = None
 _Session = None
+
+_CHUNK_SIZE = 2000  # rows per bulk operation
 
 
 def _get_session() -> Session:
@@ -35,80 +38,138 @@ def _get_session() -> Session:
     return _Session()
 
 
+def _serialize_row(row: dict) -> dict:
+    """Prepare a row dict for psycopg2 — convert UUIDs and dicts to DB-safe types."""
+    out = {}
+    for col, val in row.items():
+        if isinstance(val, uuid.UUID):
+            out[col] = str(val)
+        elif isinstance(val, (dict, list)):
+            out[col] = json.dumps(val, default=str)
+        else:
+            out[col] = val
+    return out
+
+
 def save_raw_records(
     table_name: str,
     rows: list[dict],
     dedup_columns: list[str] | None = None,
 ) -> int:
     """
-    Insert raw records with superseding deduplication.
+    Insert raw records with superseding deduplication, using bulk operations.
 
-    For each incoming row:
-    1. If a matching active record exists (same dedup_columns + status='active'):
-       - Mark existing as 'superseded', set archived_at = NOW()
-    2. Insert the new record as status='active'
+    For each chunk of rows:
+    1. Bulk UPDATE: mark any existing active records with matching dedup keys
+       as 'superseded' using a single IN-clause query per chunk.
+    2. Bulk INSERT: insert all new rows in one execute_values call.
 
-    Returns count of rows inserted.
+    This replaces the previous row-by-row approach which was too slow for
+    large entity batches (e.g. 800k+ deals).
+
+    Returns total count of rows inserted.
     """
     if not rows:
         return 0
 
-    session = _get_session()
     inserted = 0
+    now = datetime.now(timezone.utc)
 
-    try:
-        with session.begin():
-            for row in rows:
-                # Supersede any existing active record
-                if dedup_columns:
-                    # Quote column names to handle reserved SQL keywords (group, time, type, …)
-                    where_clauses = " AND ".join(
-                        f'"{col}" = :{col}' for col in dedup_columns if col in row
+    # Quote column names once — handles SQL reserved words (group, time, type …)
+    if rows:
+        cols = list(rows[0].keys())
+        quoted_cols = ", ".join(f'"{c}"' for c in cols)
+
+    for chunk_start in range(0, len(rows), _CHUNK_SIZE):
+        chunk = rows[chunk_start: chunk_start + _CHUNK_SIZE]
+        serialized = [_serialize_row(r) for r in chunk]
+
+        session = _get_session()
+        try:
+            raw_conn = session.connection().connection
+            cur = raw_conn.cursor()
+
+            # ── Step 1: bulk supersede existing active records ────────────────
+            if dedup_columns:
+                valid_dedup = [c for c in dedup_columns if c in (chunk[0] if chunk else {})]
+                if valid_dedup:
+                    # Build tuple list of dedup key values for the IN clause
+                    key_tuples = tuple(
+                        tuple(str(r[c]) if isinstance(r[c], uuid.UUID) else r[c] for c in valid_dedup)
+                        for r in chunk
                     )
-                    if where_clauses:
-                        params = {col: row[col] for col in dedup_columns if col in row}
-                        params["now"] = datetime.now(timezone.utc)
-                        session.execute(
-                            text(
-                                f"""
-                                UPDATE {table_name}
-                                SET status = 'superseded', archived_at = :now, updated_at = :now
-                                WHERE {where_clauses}
-                                  AND status = 'active'
-                                """
-                            ),
-                            params,
-                        )
+                    quoted_dedup = ", ".join(f'"{c}"' for c in valid_dedup)
+                    placeholders = ", ".join(["%s"] * len(valid_dedup))
 
-                # Build INSERT with only columns present in the row.
-                # Quote column names to handle reserved SQL keywords (group, time, type, …)
-                cols = list(row.keys())
-                col_names = ", ".join(f'"{col}"' for col in cols)
-                placeholders = ", ".join(f":{col}" for col in cols)
-                insert_params = {}
-                for col in cols:
-                    val = row[col]
-                    if isinstance(val, uuid.UUID):
-                        insert_params[col] = str(val)
-                    elif isinstance(val, dict | list):
-                        import json
-                        insert_params[col] = json.dumps(val, default=str)
-                    else:
-                        insert_params[col] = val
+                    update_sql = f"""
+                        UPDATE {table_name}
+                        SET status = 'superseded',
+                            archived_at = %s,
+                            updated_at = %s
+                        WHERE ({quoted_dedup}) IN %s
+                          AND status = 'active'
+                    """
+                    cur.execute(update_sql, (now, now, key_tuples))
 
-                session.execute(
-                    text(f"INSERT INTO {table_name} ({col_names}) VALUES ({placeholders})"),
-                    insert_params,
-                )
-                inserted += 1
+            # ── Step 2: bulk insert all rows in one shot ──────────────────────
+            values = [tuple(r[c] for c in cols) for r in serialized]
+            insert_sql = f"INSERT INTO {table_name} ({quoted_cols}) VALUES %s"
+            execute_values(cur, insert_sql, values, page_size=500)
 
-        return inserted
+            raw_conn.commit()
+            inserted += len(chunk)
 
-    except Exception as exc:
-        log.error("ingestion.save_raw.error", table=table_name, error=str(exc))
-        raise
-    finally:
-        session.close()
+        except Exception as exc:
+            try:
+                raw_conn.rollback()
+            except Exception:
+                pass
+            log.error("ingestion.save_raw.error", table=table_name, error=str(exc))
+            raise
+        finally:
+            session.close()
+
+    return inserted
+
+
+def save_tick_records(table_name: str, rows: list[dict]) -> int:
+    """
+    Append-only bulk insert for tick tables.
+
+    Tick tables (raw_mt5_ticks, raw_mt4_ticks) have no status / ingestion_hash /
+    archived_at columns — they are append-only TimescaleDB hypertables.
+    This bypasses the supersede step used by save_raw_records.
+    """
+    if not rows:
+        return 0
+
+    inserted = 0
+    cols = list(rows[0].keys())
+    quoted_cols = ", ".join(f'"{c}"' for c in cols)
+
+    for chunk_start in range(0, len(rows), _CHUNK_SIZE):
+        chunk = rows[chunk_start: chunk_start + _CHUNK_SIZE]
+        serialized = [_serialize_row(r) for r in chunk]
+
+        session = _get_session()
+        try:
+            raw_conn = session.connection().connection
+            cur = raw_conn.cursor()
+            values = [tuple(r[c] for c in cols) for r in serialized]
+            execute_values(cur, f"INSERT INTO {table_name} ({quoted_cols}) VALUES %s", values, page_size=500)
+            raw_conn.commit()
+            inserted += len(chunk)
+        except Exception as exc:
+            try:
+                raw_conn.rollback()
+            except Exception:
+                pass
+            log.error("ingestion.save_ticks.error", table=table_name, error=str(exc))
+            raise
+        finally:
+            session.close()
+
+    return inserted
 
 
 def log_collector_run(run: dict) -> None:
@@ -150,7 +211,6 @@ def log_collector_run(run: dict) -> None:
 
 def log_collector_error(err: dict) -> None:
     """Write a collector error to raw_collector_errors."""
-    import json
     session = _get_session()
     try:
         context_json = err.get("context_json", {})

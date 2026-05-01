@@ -1,0 +1,26 @@
+[project]
+name = "api"
+version = "0.1.0"
+requires-python = ">=3.11"
+
+dependencies = [
+    "fastapi>=0.115",
+    "uvicorn[standard]>=0.30",
+    "sqlalchemy>=2.0",
+    "psycopg2-binary>=2.9",
+    "pydantic>=2.0",
+    "python-jose[cryptography]>=3.3",
+    "passlib[bcrypt]>=1.7",
+    "python-multipart>=0.0.9",
+    "structlog>=24.0",
+    "db",
+    "shared",
+]
+
+[tool.uv.sources]
+db     = { path = "../../packages/db" }
+shared = { path = "../../packages/shared" }
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"

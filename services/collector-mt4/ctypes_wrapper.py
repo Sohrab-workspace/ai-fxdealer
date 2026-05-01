@@ -216,6 +216,89 @@ class MarginLevel(Structure):
     ]
 
 
+class ServerLog(Structure):
+    """
+    MT4 ServerLog — one server log entry.
+    Default packing (no #pragma pack).
+    Size = 796 bytes (4 + 24 + 256 + 512).
+
+    Field layout from MT4ManagerAPI.h:
+        int  code;       // EnErrLogTypes (0=standard, 1=logins, 2=trades, 3=errors, 4=full)
+        char time[24];   // formatted time string "YYYY.MM.DD HH:MM:SS"
+        char ip[256];    // IP address string
+        char message[512]; // log message text
+    """
+    _fields_ = [
+        ("code",    c_int),        # EnErrLogTypes
+        ("time",    c_char * 24),  # formatted time string "YYYY.MM.DD HH:MM:SS"
+        ("ip",      c_char * 256), # IP address string
+        ("message", c_char * 512), # log message text
+    ]
+
+
+class TickRequest(Structure):
+    """
+    MT4 TickRequest — parameter struct for TicksRequest().
+    #pragma pack(push,1) — NO alignment padding.
+    Size = 21 bytes.
+
+    Field layout from MT4ManagerAPI.h:
+        char       symbol[12];  // symbol name
+        __time32_t from;        // start of period (unix seconds)
+        __time32_t to;          // end of period (unix seconds)
+        char       flags;       // TICK_FLAG_RAW=1, TICK_FLAG_NORMAL=2, TICK_FLAG_ALL=3
+    """
+    _pack_ = 1
+    _fields_ = [
+        ("symbol", c_char * 12),
+        ("from_ts", c_int),
+        ("to_ts",   c_int),
+        ("flags",   c_char),
+    ]
+
+
+class TickRecord(Structure):
+    """
+    MT4 TickRecord — one tick returned by TicksRequest().
+    #pragma pack(push,1) — NO alignment padding.
+    Size = 25 bytes.
+
+    Field layout from MT4ManagerAPI.h:
+        __time32_t ctm;      // tick time (unix seconds)
+        double     bid, ask; // bid and ask prices
+        int        datafeed; // datafeed index
+        char       flags;    // TICK_FLAG_* flags
+    """
+    _pack_ = 1
+    _fields_ = [
+        ("ctm",      c_int),
+        ("bid",      c_double),
+        ("ask",      c_double),
+        ("datafeed", c_int),
+        ("flags",    c_char),
+    ]
+
+
+class TickInfo(Structure):
+    """
+    MT4 TickInfo — last tick per symbol, returned by TickInfoLast().
+    Default packing.
+    Size = 32 bytes.
+
+    Field layout from MT4ManagerAPI.h:
+        char       symbol[12];  // symbol name
+        __time32_t ctm;         // tick time (unix seconds)
+        double     bid;
+        double     ask;
+    """
+    _fields_ = [
+        ("symbol", c_char * 12),
+        ("ctm",    c_int),
+        ("bid",    c_double),
+        ("ask",    c_double),
+    ]
+
+
 class SymbolSummary(Structure):
     """MT4 SymbolSummary — server-level open interest per symbol."""
     _fields_ = [
@@ -294,6 +377,9 @@ _VT_ADM_TRADES_REQ         = 80   # AdmTradesRequest(group, open_only, &total) �
 _VT_ONLINE_REQ             = 104  # OnlineRequest(&total) → OnlineRecord*
 _VT_TRADES_USER_HISTORY    = 108  # TradesUserHistory(login, from, to, &total) → TradeRecord*
 _VT_REPORTS_REQUEST        = 110  # ReportsRequest(req*, logins*, &total) → TradeRecord* (batch)
+_VT_JOURNAL_REQUEST        = 96   # JournalRequest(mode, from, to, filter, &total) → ServerLog*
+_VT_TICK_INFO_LAST         = 145  # TickInfoLast(symbol, &total) → TickInfo*
+_VT_TICKS_REQUEST          = 162  # TicksRequest(TickRequest*, &total) → TickRecord*
 
 
 # ── MT4Manager facade ─────────────────────────────────────────────────────────
@@ -582,3 +668,141 @@ class MT4Manager:
         log.info("collector.mt4.get_summary.not_implemented",
                  msg="SummaryGetAll requires pumping mode — skipping for now")
         return []
+
+    def get_server_logs(self, from_ts: int, to_ts: int) -> list[dict]:
+        """
+        Fetch server log entries for the given time range.
+        Uses JournalRequest (vtable[96]).
+
+        Signature: JournalRequest(mode, from, to, filter, *total) → ServerLog*
+        mode=4 = LOG_TYPE_FULL (all log entries including logins, trades, errors).
+        Returns ServerLog* array; caller must release via MemFree.
+        """
+        self._assert_connected()
+        total = c_int(0)
+
+        try:
+            ptr = _call_vtfn(
+                self._mgr, _VT_JOURNAL_REQUEST,
+                POINTER(ServerLog),
+                [c_int, c_int, c_int, c_char_p, POINTER(c_int)],
+                c_int(4),        # mode = LOG_TYPE_FULL (4) — all log entries
+                c_int(from_ts),
+                c_int(to_ts),
+                b"",             # filter: empty (no keyword filter)
+                byref(total),
+            )
+        except Exception as exc:
+            log.warning(
+                "collector.mt4.get_server_logs.failed",
+                error=str(exc),
+                vtable=_VT_JOURNAL_REQUEST,
+            )
+            return []
+
+        count = total.value
+        if not ptr or count <= 0:
+            return []
+
+        try:
+            result = []
+            for i in range(count):
+                rec = struct_to_dict(ptr[i])
+                result.append(rec)
+            log.debug("collector.mt4.get_server_logs", count=len(result),
+                      from_ts=from_ts, to_ts=to_ts)
+            return result
+        finally:
+            self._memfree(ptr)
+
+    def get_latest_ticks(self) -> list[dict]:
+        """
+        Fetch the most recent tick for every available symbol via TickInfoLast (vtable[145]).
+
+        Signature: TickInfoLast(symbol, *total) → TickInfo*
+        Pass "*" to request ticks for all symbols (pumping mode; may return empty
+        without PumpingSwitch active — falls back gracefully).
+
+        TickInfo struct: symbol (char[12]), ctm (unix s), bid (double), ask (double).
+        """
+        self._assert_connected()
+        total = c_int(0)
+
+        try:
+            ptr = _call_vtfn(
+                self._mgr, _VT_TICK_INFO_LAST,
+                POINTER(TickInfo),
+                [c_char_p, POINTER(c_int)],
+                b"*",
+                byref(total),
+            )
+        except Exception as exc:
+            log.warning(
+                "collector.mt4.get_latest_ticks.failed",
+                error=str(exc),
+                vtable=_VT_TICK_INFO_LAST,
+            )
+            return []
+
+        count = total.value
+        if not ptr or count <= 0:
+            return []
+
+        try:
+            result = []
+            for i in range(count):
+                rec = struct_to_dict(ptr[i])
+                result.append(rec)
+            log.debug("collector.mt4.get_latest_ticks", count=len(result))
+            return result
+        finally:
+            self._memfree(ptr)
+
+    def get_ticks(self, symbol: str, from_ts: int, to_ts: int) -> list[dict]:
+        """
+        Fetch tick history for a symbol via TicksRequest (vtable[162]).
+
+        Signature: TicksRequest(TickRequest*, *total) → TickRecord*
+        TickRequest: symbol (char[12]), from_ts (__time32_t), to_ts (__time32_t), flags (char).
+        TickRecord:  ctm (unix s), bid (double), ask (double), datafeed (int), flags (char).
+        """
+        self._assert_connected()
+        total = c_int(0)
+
+        req = TickRequest()
+        sym_bytes = symbol.encode("ascii")[:11]
+        req.symbol = sym_bytes
+        req.from_ts = c_int(from_ts).value
+        req.to_ts   = c_int(to_ts).value
+        req.flags   = b"\x03"  # TICK_FLAG_ALL = 3
+
+        try:
+            ptr = _call_vtfn(
+                self._mgr, _VT_TICKS_REQUEST,
+                POINTER(TickRecord),
+                [POINTER(TickRequest), POINTER(c_int)],
+                byref(req),
+                byref(total),
+            )
+        except Exception as exc:
+            log.warning(
+                "collector.mt4.get_ticks.failed",
+                symbol=symbol, error=str(exc),
+                vtable=_VT_TICKS_REQUEST,
+            )
+            return []
+
+        count = total.value
+        if not ptr or count <= 0:
+            return []
+
+        try:
+            result = []
+            for i in range(count):
+                rec = struct_to_dict(ptr[i])
+                rec["_symbol"] = symbol
+                result.append(rec)
+            log.debug("collector.mt4.get_ticks", symbol=symbol, count=len(result))
+            return result
+        finally:
+            self._memfree(ptr)

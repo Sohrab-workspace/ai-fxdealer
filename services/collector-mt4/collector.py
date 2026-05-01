@@ -23,7 +23,7 @@ from uuid import UUID
 import structlog
 
 from shared.base_collector import BaseCollector
-from db.ingestion import save_raw_records, log_collector_run, log_collector_error
+from db.ingestion import save_raw_records, save_tick_records, log_collector_run, log_collector_error
 
 from ctypes_wrapper import MT4Manager, unpack_ip
 
@@ -120,7 +120,7 @@ class MT4Collector(BaseCollector):
             except Exception as exc:
                 self.handle_error(exc, {"entity": entity, "sync_mode": "bootstrap"})
 
-        for entity in ("orders", "deals"):
+        for entity in ("orders", "deals", "server_logs", "ticks"):
             try:
                 records = self.fetch_entity(entity, from_ts=from_ts, to_ts=to_ts)
                 saved = self.save_raw(entity, records)
@@ -158,7 +158,7 @@ class MT4Collector(BaseCollector):
             except Exception as exc:
                 self.handle_error(exc, {"entity": entity, "sync_mode": "incremental"})
 
-        for entity in ("deals",):
+        for entity in ("deals", "server_logs", "ticks"):
             try:
                 records = self.fetch_entity(entity, from_ts=from_ts, to_ts=to_ts)
                 saved = self.save_raw(entity, records)
@@ -203,6 +203,9 @@ class MT4Collector(BaseCollector):
             history = m.get_history_by_group("*", from_ts, to_ts)
             return [t for t in history if t.get("close_time", 0) > 0]
 
+        elif entity_name == "server_logs":
+            return m.get_server_logs(from_ts, to_ts)
+
         elif entity_name == "symbols":
             return m.get_symbols()
 
@@ -215,6 +218,11 @@ class MT4Collector(BaseCollector):
         elif entity_name == "summary":
             return m.get_summary()
 
+        elif entity_name == "ticks":
+            # Try TickInfoLast("*") to get current tick for all symbols.
+            # This works in pumping mode; gracefully returns [] if unavailable.
+            return m.get_latest_ticks()
+
         else:
             raise ValueError(f"Unknown entity: {entity_name!r}")
 
@@ -225,19 +233,37 @@ class MT4Collector(BaseCollector):
             return 0
 
         entity_to_table = {
-            "accounts": "raw_mt4_accounts",
-            "orders":   "raw_mt4_orders",
-            "deals":    "raw_mt4_deals",
-            "symbols":  "raw_mt4_symbols",
-            "online":   "raw_mt4_online",
-            "margin":   "raw_mt4_margin",
-            "summary":  "raw_mt4_summary",
+            "accounts":    "raw_mt4_accounts",
+            "orders":      "raw_mt4_orders",
+            "deals":       "raw_mt4_deals",
+            "symbols":     "raw_mt4_symbols",
+            "online":      "raw_mt4_online",
+            "margin":      "raw_mt4_margin",
+            "summary":     "raw_mt4_summary",
+            "server_logs": "raw_mt4_server_logs",
+            "ticks":       "raw_mt4_ticks",
         }
         table = entity_to_table.get(entity_name)
         if not table:
             raise ValueError(f"No table mapped for entity: {entity_name!r}")
 
         now = datetime.now(timezone.utc)
+
+        # Ticks are append-only: no status, ingestion_hash, or superseding
+        if entity_name == "ticks":
+            rows = []
+            for rec in records:
+                row = {
+                    "id":           uuid.uuid4(),
+                    "broker_id":    self.broker_id,
+                    "server_id":    self.server_id,
+                    "payload_json": rec,
+                    "collected_at": now,
+                }
+                row.update(_extract_mt4_fields("ticks", rec))
+                rows.append(row)
+            return save_tick_records(table, rows)
+
         rows = []
         for rec in records:
             row = {
@@ -296,13 +322,15 @@ class MT4Collector(BaseCollector):
 
 def _dedup_columns(entity_name: str) -> list[str]:
     return {
-        "accounts": ["broker_id", "server_id", "login"],
-        "orders":   ["broker_id", "server_id", "order_id"],
-        "deals":    ["broker_id", "server_id", "order_id"],
-        "symbols":  ["broker_id", "server_id", "symbol"],
-        "online":   ["broker_id", "server_id", "login"],
-        "margin":   ["broker_id", "server_id", "login"],
-        "summary":  ["broker_id", "server_id", "symbol"],
+        "accounts":    ["broker_id", "server_id", "login"],
+        "orders":      ["broker_id", "server_id", "order_id"],
+        "deals":       ["broker_id", "server_id", "order_id"],
+        "symbols":     ["broker_id", "server_id", "symbol"],
+        "online":      ["broker_id", "server_id", "login"],
+        "margin":      ["broker_id", "server_id", "login"],
+        "summary":     ["broker_id", "server_id", "symbol"],
+        "server_logs": [],  # no unique key — cursor prevents re-fetch
+        "ticks":       [],  # append-only hypertable
     }.get(entity_name, [])
 
 
@@ -313,6 +341,28 @@ def _unix_s_to_dt(ts) -> datetime | None:
         return datetime.fromtimestamp(int(ts), tz=timezone.utc)
     except (ValueError, OSError, OverflowError):
         return None
+
+
+_MT4_LOG_TIME_FMTS = (
+    "%Y.%m.%d %H:%M:%S",        # "2026.04.26 15:30:45"
+    "%Y.%m.%d %H:%M:%S.%f",     # "2026.04.26 15:30:45.123"
+    "%d.%m.%Y %H:%M:%S",        # "26.04.2026 15:30:45" (some builds)
+    "%Y-%m-%d %H:%M:%S",        # "2026-04-26 15:30:45"
+)
+
+
+def _parse_mt4_log_time(time_str) -> datetime:
+    """Parse MT4 ServerLog.time string → UTC datetime. Falls back to now() if unparseable."""
+    if time_str:
+        if isinstance(time_str, bytes):
+            time_str = time_str.decode("utf-8", errors="replace")
+        s = time_str.strip()
+        for fmt in _MT4_LOG_TIME_FMTS:
+            try:
+                return datetime.strptime(s, fmt).replace(tzinfo=timezone.utc)
+            except ValueError:
+                continue
+    return datetime.now(timezone.utc)
 
 
 def _extract_mt4_fields(entity_name: str, rec: dict) -> dict:
@@ -433,6 +483,34 @@ def _extract_mt4_fields(entity_name: str, rec: dict) -> dict:
             "hedged":      rec.get("hedged"),
             "hedged_buy":  rec.get("hedged_buy"),
             "hedged_sell": rec.get("hedged_sell"),
+        }
+
+    elif entity_name == "server_logs":
+        # Real ServerLog struct (from MT4ManagerAPI.h):
+        #   code (int), time (char[24] "YYYY.MM.DD HH:MM:SS"), ip (char[256]), message (char[512])
+        # Note: 'code' covers both severity and category in schema.
+        time_str = rec.get("time", "")
+        return {
+            "log_time":       _parse_mt4_log_time(time_str),  # never None — falls back to now()
+            "category":       rec.get("code"),      # no separate category in struct — reuse code
+            "code":           rec.get("code"),
+            "message":        rec.get("message"),
+            "login":          None,                 # extracted later by log_parser.py
+            "ip_address":     rec.get("ip"),        # IP string from struct
+            "computer_id":    None,
+            "is_login_event": False,
+        }
+
+    elif entity_name == "ticks":
+        # TickInfo struct: symbol (char[12]), ctm (unix s), bid (double), ask (double).
+        # Returned by TickInfoLast("*") — symbol IS in the struct.
+        ctm = rec.get("ctm")
+        return {
+            "symbol":           rec.get("symbol"),
+            "ctm":              ctm,
+            "bid":              rec.get("bid"),
+            "ask":              rec.get("ask"),
+            "source_timestamp": _unix_s_to_dt(ctm),
         }
 
     return {}

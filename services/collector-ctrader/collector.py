@@ -156,7 +156,7 @@ class CTraderCollector(BaseCollector):
         totals: dict[str, int] = {}
         start = time.monotonic()
 
-        for entity in ("accounts",):
+        for entity in ("accounts", "symbols", "groups"):
             try:
                 records = self.fetch_entity(entity)
                 saved = self.save_raw(entity, records)
@@ -210,7 +210,9 @@ class CTraderCollector(BaseCollector):
         to_ms   = kwargs.get("to_ms",   now_ms)
 
         if entity_name == "accounts":
-            return self._fetch_paginated_traders(from_ms, to_ms)
+            # Always paginate from epoch=0 — TRADER_LIST_REQ filters by registrationTimestamp,
+            # so using the sync-window from_ms would miss all accounts registered before it.
+            return self._fetch_paginated_traders(0, to_ms)
 
         elif entity_name == "deals":
             return self._fetch_paginated_deals(from_ms, to_ms)
@@ -239,7 +241,12 @@ class CTraderCollector(BaseCollector):
             raise ValueError(f"Unknown entity: {entity_name!r}")
 
     def _fetch_paginated_traders(self, from_ms: int, to_ms: int) -> list[dict]:
-        """Paginate TRADER_LIST_REQ using hasMore + advancing fromTimestamp."""
+        """Paginate TRADER_LIST_REQ using hasMore + advancing fromTimestamp.
+
+        TRADER_LIST_REQ fields: 2=fromTimestamp, 3=toTimestamp (registration date range).
+        Response fields: 2=traders[], 3=hasMore (bool).
+        Cursor advances via registrationTimestamp (field 25) of the last returned trader.
+        """
         results = []
         cursor = from_ms
         while True:
@@ -251,9 +258,17 @@ class CTraderCollector(BaseCollector):
             has_more = fields.get(3, [0])[0] if 3 in fields else 0
             if not has_more or not traders:
                 break
-            # Advance cursor: use registrationTimestamp of last trader
-            cursor = to_ms  # simplified — in production derive from last record's timestamp
-            break  # safety: avoid infinite loop; production should use real pagination
+            # Advance cursor from last trader's registrationTimestamp (ProtoTrader field 25)
+            last_item = traders[-1]
+            if isinstance(last_item, bytes):
+                last_fields = parse_message(last_item)
+                last_ts = last_fields.get(25, [None])[0]
+                if last_ts:
+                    cursor = last_ts + 1
+                else:
+                    break
+            else:
+                break
         return results
 
     def _fetch_paginated_deals(self, from_ms: int, to_ms: int) -> list[dict]:
