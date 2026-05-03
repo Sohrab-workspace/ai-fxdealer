@@ -24,6 +24,7 @@ members = [
     "packages/shared",
     "packages/db",
     "packages/queue",
+    "services/api",
     "services/collector-mt5",
     "services/collector-mt4",
     "services/collector-ctrader",

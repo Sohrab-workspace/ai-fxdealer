@@ -1,0 +1,38 @@
+# Git
+.git
+.gitignore
+
+# Python
+**/__pycache__
+**/*.pyc
+**/*.pyo
+**/.venv
+**/.pytest_cache
+**/.mypy_cache
+**/.ruff_cache
+**/dist
+**/build
+**/*.egg-info
+
+# Node / Next.js
+dashboard/node_modules
+dashboard/.next
+dashboard/.swc
+
+# Broker runtime data — never include in images
+dlls/
+bases/
+logs/
+
+# Env files with secrets
+.env.local
+**/.env.local
+
+# IDE
+.vscode
+.idea
+**/*.code-workspace
+
+# Docs / misc
+docs/
+*.md

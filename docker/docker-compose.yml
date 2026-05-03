@@ -1,18 +1,24 @@
 version: "3.9"
 
-# AI FXDealer — Full stack local dev
+# AI FXDealer — Full stack
 #
-# Usage:
-#   docker compose -f docker/docker-compose.yml up -d
-#   docker compose -f docker/docker-compose.yml exec db psql -U fxdealer fxdealer
+# Quick start (single machine / local dev):
+#   docker compose -f docker/docker-compose.yml up -d --build
 #
-# Run migrations after first start:
-#   FXDEALER_DB_URL=postgresql://fxdealer:fxdealer@localhost:5432/fxdealer \
-#   uv run --package db alembic -c packages/db/alembic.ini upgrade head
+# GCP / remote VM (replace <VM_IP> with your external IP):
+#   NEXT_PUBLIC_API_URL=http://<VM_IP>:8000 \
+#   FXDEALER_JWT_SECRET=<strong-secret> \
+#   docker compose -f docker/docker-compose.yml up -d --build
+#
+# Open ports after deploy:
+#   :3000  — Dashboard (Next.js)
+#   :8000  — API       (FastAPI, also used by dashboard browser calls)
+#   :5432  — Postgres  (close this in production)
+#   :6379  — Redis     (close this in production)
 
 services:
 
-  # ── PostgreSQL + TimescaleDB ───────────────────────────────────────────────
+  # ── PostgreSQL + TimescaleDB ──────────────────────────────────────────────
   db:
     image: timescale/timescaledb:latest-pg16
     container_name: fxdealer-db
@@ -31,7 +37,7 @@ services:
       timeout: 5s
       retries: 10
 
-  # ── Redis ──────────────────────────────────────────────────────────────────
+  # ── Redis ─────────────────────────────────────────────────────────────────
   redis:
     image: redis:7-alpine
     container_name: fxdealer-redis
@@ -47,7 +53,7 @@ services:
       timeout: 3s
       retries: 10
 
-  # ── Alembic migration runner (one-shot) ────────────────────────────────────
+  # ── Alembic migration runner (one-shot) ───────────────────────────────────
   migrate:
     build:
       context: ..
@@ -60,9 +66,45 @@ services:
         condition: service_healthy
     restart: "no"
 
-  # ── ARQ collector worker (Linux collectors only) ───────────────────────────
-  # Note: MT5 and MT4 collectors require Windows hosts — start them separately
-  # on Windows EC2 or Windows Docker containers with the DLL/SDK available.
+  # ── FastAPI service ───────────────────────────────────────────────────────
+  api:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.api
+    container_name: fxdealer-api
+    restart: unless-stopped
+    environment:
+      FXDEALER_DB_URL: postgresql://fxdealer:fxdealer@db:5432/fxdealer
+      FXDEALER_REDIS_URL: redis://redis:6379/0
+      FXDEALER_JWT_SECRET: ${FXDEALER_JWT_SECRET:-dev-secret-change-in-prod}
+      FXDEALER_JWT_EXPIRY_SECONDS: ${FXDEALER_JWT_EXPIRY_SECONDS:-86400}
+      FXDEALER_LOG_LEVEL: ${FXDEALER_LOG_LEVEL:-INFO}
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+
+  # ── Next.js dashboard ─────────────────────────────────────────────────────
+  # NEXT_PUBLIC_API_URL must be the URL the *browser* uses to reach the API.
+  # On a remote VM set: NEXT_PUBLIC_API_URL=http://<VM_IP>:8000
+  dashboard:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.dashboard
+      args:
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:8000}
+    container_name: fxdealer-dashboard
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    depends_on:
+      - api
+
+  # ── ARQ collector worker (Linux collectors only) ──────────────────────────
+  # MT5 and MT4 collectors require Windows hosts — start them separately.
   collector-worker:
     build:
       context: ..
