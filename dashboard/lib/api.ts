@@ -177,6 +177,46 @@ export async function getDbCounts() {
   }>('/api/v1/collectors/db-counts')
 }
 
+// Users
+export async function getUserStats() {
+  return apiFetch<{ total: number; live: number; demo: number; high_risk: number }>('/api/v1/users/stats')
+}
+
+export async function getUserCharts() {
+  return apiFetch<{
+    status_dist: { label: string; count: number }[]
+    risk_dist: { label: string; count: number }[]
+  }>('/api/v1/users/charts')
+}
+
+export async function getUsers(params: {
+  page?: number
+  page_size?: number
+  search?: string
+  source_system?: string
+  risk_level?: string
+}) {
+  const q = new URLSearchParams()
+  if (params.page) q.set('page', String(params.page))
+  if (params.page_size) q.set('page_size', String(params.page_size))
+  if (params.search) q.set('search', params.search)
+  if (params.source_system) q.set('source_system', params.source_system)
+  if (params.risk_level) q.set('risk_level', params.risk_level)
+  return apiFetch<{ total: number; page: number; page_size: number; items: UserProfile[] }>(`/api/v1/users/?${q}`)
+}
+
+// Account stats + charts
+export async function getAccountStats() {
+  return apiFetch<{ total: number; total_balance: number; avg_balance: number; negative_count: number }>('/api/v1/accounts/stats')
+}
+
+export async function getAccountCharts() {
+  return apiFetch<{
+    currency_dist: { label: string; count: number }[]
+    balance_ranges: { label: string; count: number }[]
+  }>('/api/v1/accounts/charts')
+}
+
 // Raw Tables
 export async function getRawTable(tableName: string, params: {
   page?: number
@@ -269,6 +309,19 @@ export interface RuleScore {
   severity: string
   evaluated_at: string
   rule_engine_id: string
+}
+
+export interface UserProfile {
+  id: string
+  login: number | null
+  account_name: string | null
+  source_system: string
+  country: string | null
+  account_status: string | null
+  is_demo: number | null
+  currency: string | null
+  last_access_ts: number | null
+  risk_level: string
 }
 
 export interface CollectorRun {

@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation"
 import {
   LayoutDashboard,
   Users,
+  UserCircle,
   BarChart2,
   TrendingUp,
   AlertTriangle,
@@ -19,6 +20,7 @@ import { cn } from "@/lib/utils"
 
 const navItems = [
   { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
+  { label: "Users", href: "/dashboard/users", icon: UserCircle },
   { label: "Accounts", href: "/dashboard/accounts", icon: Users },
   { label: "Positions", href: "/dashboard/positions", icon: TrendingUp },
   { label: "Deals", href: "/dashboard/deals", icon: BarChart2 },

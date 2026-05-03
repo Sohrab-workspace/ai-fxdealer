@@ -101,6 +101,82 @@ def list_accounts(
     )
 
 
+class AccountStatsResponse(BaseModel):
+    total: int
+    total_balance: float
+    avg_balance: float
+    negative_count: int
+
+
+class AccountChartsResponse(BaseModel):
+    currency_dist: list[dict]
+    balance_ranges: list[dict]
+
+
+@router.get("/stats", response_model=AccountStatsResponse)
+def account_stats(
+    broker_ctx: BrokerContext = Depends(get_broker_context),
+    db: Session = Depends(get_db),
+):
+    bid = broker_ctx.broker_id
+    row = db.execute(
+        text("""
+            SELECT
+                COUNT(*)                                   AS total,
+                COALESCE(SUM(balance), 0)                  AS total_balance,
+                COALESCE(AVG(balance), 0)                  AS avg_balance,
+                COUNT(*) FILTER (WHERE balance < 0)        AS negative_count
+            FROM norm_accounts
+            WHERE broker_id = :bid AND status = 'active'
+        """),
+        {"bid": bid},
+    ).fetchone()
+    return AccountStatsResponse(**dict(row._mapping))
+
+
+@router.get("/charts", response_model=AccountChartsResponse)
+def account_charts(
+    broker_ctx: BrokerContext = Depends(get_broker_context),
+    db: Session = Depends(get_db),
+):
+    bid = broker_ctx.broker_id
+
+    currency_rows = db.execute(
+        text("""
+            SELECT COALESCE(currency, 'Unknown') AS label, COUNT(*) AS count
+            FROM norm_accounts
+            WHERE broker_id = :bid AND status = 'active'
+            GROUP BY currency ORDER BY count DESC LIMIT 8
+        """),
+        {"bid": bid},
+    ).fetchall()
+
+    range_rows = db.execute(
+        text("""
+            SELECT
+                CASE
+                    WHEN balance < 0        THEN 'Negative'
+                    WHEN balance = 0        THEN 'Zero'
+                    WHEN balance < 1000     THEN '$0-1K'
+                    WHEN balance < 10000    THEN '$1K-10K'
+                    WHEN balance < 100000   THEN '$10K-100K'
+                    ELSE                         '$100K+'
+                END AS label,
+                COUNT(*) AS count
+            FROM norm_accounts
+            WHERE broker_id = :bid AND status = 'active'
+            GROUP BY 1
+            ORDER BY count DESC
+        """),
+        {"bid": bid},
+    ).fetchall()
+
+    return AccountChartsResponse(
+        currency_dist=[{"label": r[0], "count": r[1]} for r in currency_rows],
+        balance_ranges=[{"label": r[0], "count": r[1]} for r in range_rows],
+    )
+
+
 @router.get("/{source_account_id}", response_model=AccountRow)
 def get_account(
     source_account_id: str,

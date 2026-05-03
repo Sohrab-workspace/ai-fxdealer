@@ -19,6 +19,7 @@ from routes.rules import router as rules_router
 from routes.collectors import router as collectors_router
 from routes.overview import router as overview_router
 from routes.raw_tables import router as raw_tables_router
+from routes.users import router as users_router
 
 structlog.configure(
     processors=[structlog.dev.ConsoleRenderer(colors=False)],
@@ -50,6 +51,7 @@ app.include_router(rules_router)
 app.include_router(collectors_router)
 app.include_router(overview_router)
 app.include_router(raw_tables_router)
+app.include_router(users_router)
 
 
 @app.get("/health")
